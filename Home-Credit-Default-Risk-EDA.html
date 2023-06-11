@@ -1627,23 +1627,1661 @@ display: none;
 </div>
 
 
-<p>This is an <a href="http://rmarkdown.rstudio.com">R Markdown</a>
-Notebook. When you execute code within the notebook, the results appear
-beneath the code.</p>
-<p>Try executing this chunk by clicking the <em>Run</em> button within
-the chunk or by placing your cursor inside it and pressing
-<em>Ctrl+Shift+Enter</em>.</p>
-<pre class="r"><code>plot(cars)</code></pre>
-<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABUAAAAPACAMAAADDuCPrAAAAz1BMVEUAAAAAADoAAGYAOjoAOmYAOpAAZmYAZpAAZrY6AAA6OgA6Ojo6OmY6ZmY6ZpA6ZrY6kJA6kLY6kNtmAABmADpmOgBmOjpmZjpmZmZmZpBmkLZmkNtmtttmtv+QOgCQZgCQZjqQZmaQkGaQkLaQtraQttuQtv+Q2/+2ZgC2Zjq2kDq2kGa2tpC2tra2ttu227a229u22/+2///bkDrbkGbbtmbbtpDbtrbb25Db27bb29vb2//b/7bb////tmb/25D/27b/29v//7b//9v///+YQ9N6AAAACXBIWXMAAB2HAAAdhwGP5fFlAAAgAElEQVR4nO3df3/TVr7gcYfCXlJaupcunQxTWGYHbsOAe6EpsKRLSOs8/8e0ku04dmyS6Bv9OEfn/f6jJX4lworkD5J1dDw5AyBkMvQTAMiVgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIEdR7Q2fHH6XT66/Hnrv8i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" width="672" /></p>
-<p>Add a new chunk by clicking the <em>Insert Chunk</em> button on the
-toolbar or by pressing <em>Ctrl+Alt+I</em>.</p>
-<p>When you save the notebook, an HTML file containing the code and
-output will be saved alongside it (click the <em>Preview</em> button or
-press <em>Ctrl+Shift+K</em> to preview the HTML file).</p>
-<p>The preview shows you a rendered HTML copy of the contents of the
-editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not
-run any R code chunks. Instead, the output of the chunk when it was last
-run in the editor is displayed.</p>
+<p>Suggestion: Explore the scope of missing data in
+application{train|test}.csv and come up with possible solutions. Remove
+rows? Remove columns? Impute?</p>
+<pre class="r"><code>skim(data)</code></pre>
+<table>
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td align="left">Name</td>
+<td align="left">data</td>
+</tr>
+<tr class="even">
+<td align="left">Number of rows</td>
+<td align="left">307511</td>
+</tr>
+<tr class="odd">
+<td align="left">Number of columns</td>
+<td align="left">122</td>
+</tr>
+<tr class="even">
+<td align="left">_______________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Column type frequency:</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">character</td>
+<td align="left">16</td>
+</tr>
+<tr class="odd">
+<td align="left">numeric</td>
+<td align="left">106</td>
+</tr>
+<tr class="even">
+<td align="left">________________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Group variables</td>
+<td align="left">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col width="31%" />
+<col width="11%" />
+<col width="16%" />
+<col width="4%" />
+<col width="4%" />
+<col width="8%" />
+<col width="10%" />
+<col width="12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">empty</th>
+<th align="right">n_unique</th>
+<th align="right">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NAME_CONTRACT_TYPE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">10</td>
+<td align="right">15</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">CODE_GENDER</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_OWN_CAR</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_OWN_REALTY</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">NAME_TYPE_SUITE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">15</td>
+<td align="right">1292</td>
+<td align="right">8</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">NAME_INCOME_TYPE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">7</td>
+<td align="right">20</td>
+<td align="right">0</td>
+<td align="right">8</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">NAME_EDUCATION_TYPE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">15</td>
+<td align="right">29</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">NAME_FAMILY_STATUS</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">20</td>
+<td align="right">0</td>
+<td align="right">6</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">NAME_HOUSING_TYPE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">12</td>
+<td align="right">19</td>
+<td align="right">0</td>
+<td align="right">6</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">OCCUPATION_TYPE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">21</td>
+<td align="right">96391</td>
+<td align="right">19</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">WEEKDAY_APPR_PROCESS_START</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">6</td>
+<td align="right">9</td>
+<td align="right">0</td>
+<td align="right">7</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">ORGANIZATION_TYPE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">22</td>
+<td align="right">0</td>
+<td align="right">58</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">FONDKAPREMONT_MODE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">21</td>
+<td align="right">210295</td>
+<td align="right">5</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">HOUSETYPE_MODE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">16</td>
+<td align="right">154297</td>
+<td align="right">4</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">WALLSMATERIAL_MODE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">12</td>
+<td align="right">156341</td>
+<td align="right">8</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">EMERGENCYSTATE_MODE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">145755</td>
+<td align="right">3</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col width="21%" />
+<col width="7%" />
+<col width="10%" />
+<col width="7%" />
+<col width="7%" />
+<col width="7%" />
+<col width="7%" />
+<col width="7%" />
+<col width="7%" />
+<col width="9%" />
+<col width="4%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">p0</th>
+<th align="right">p25</th>
+<th align="right">p50</th>
+<th align="right">p75</th>
+<th align="right">p100</th>
+<th align="left">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">SK_ID_CURR</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">278180.52</td>
+<td align="right">102790.18</td>
+<td align="right">100002.00</td>
+<td align="right">189145.50</td>
+<td align="right">278202.00</td>
+<td align="right">367142.50</td>
+<td align="right">456255.00</td>
+<td align="left">▇▇▇▇▇</td>
+</tr>
+<tr class="even">
+<td align="left">TARGET</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.08</td>
+<td align="right">0.27</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">CNT_CHILDREN</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.42</td>
+<td align="right">0.72</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="right">19.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">AMT_INCOME_TOTAL</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">168797.92</td>
+<td align="right">237123.15</td>
+<td align="right">25650.00</td>
+<td align="right">112500.00</td>
+<td align="right">147150.00</td>
+<td align="right">202500.00</td>
+<td align="right">117000000.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">AMT_CREDIT</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">599026.00</td>
+<td align="right">402490.78</td>
+<td align="right">45000.00</td>
+<td align="right">270000.00</td>
+<td align="right">513531.00</td>
+<td align="right">808650.00</td>
+<td align="right">4050000.00</td>
+<td align="left">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">AMT_ANNUITY</td>
+<td align="right">12</td>
+<td align="right">1.00</td>
+<td align="right">27108.57</td>
+<td align="right">14493.74</td>
+<td align="right">1615.50</td>
+<td align="right">16524.00</td>
+<td align="right">24903.00</td>
+<td align="right">34596.00</td>
+<td align="right">258025.50</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">AMT_GOODS_PRICE</td>
+<td align="right">278</td>
+<td align="right">1.00</td>
+<td align="right">538396.21</td>
+<td align="right">369446.46</td>
+<td align="right">40500.00</td>
+<td align="right">238500.00</td>
+<td align="right">450000.00</td>
+<td align="right">679500.00</td>
+<td align="right">4050000.00</td>
+<td align="left">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">REGION_POPULATION_RELATIVE</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.02</td>
+<td align="right">0.01</td>
+<td align="right">0.00</td>
+<td align="right">0.01</td>
+<td align="right">0.02</td>
+<td align="right">0.03</td>
+<td align="right">0.07</td>
+<td align="left">▇▇▃▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">DAYS_BIRTH</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">-16037.00</td>
+<td align="right">4363.99</td>
+<td align="right">-25229.00</td>
+<td align="right">-19682.00</td>
+<td align="right">-15750.00</td>
+<td align="right">-12413.00</td>
+<td align="right">-7489.00</td>
+<td align="left">▃▆▇▇▅</td>
+</tr>
+<tr class="even">
+<td align="left">DAYS_EMPLOYED</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">63815.05</td>
+<td align="right">141275.77</td>
+<td align="right">-17912.00</td>
+<td align="right">-2760.00</td>
+<td align="right">-1213.00</td>
+<td align="right">-289.00</td>
+<td align="right">365243.00</td>
+<td align="left">▇▁▁▁▂</td>
+</tr>
+<tr class="odd">
+<td align="left">DAYS_REGISTRATION</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">-4986.12</td>
+<td align="right">3522.89</td>
+<td align="right">-24672.00</td>
+<td align="right">-7479.50</td>
+<td align="right">-4504.00</td>
+<td align="right">-2010.00</td>
+<td align="right">0.00</td>
+<td align="left">▁▁▂▅▇</td>
+</tr>
+<tr class="even">
+<td align="left">DAYS_ID_PUBLISH</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">-2994.20</td>
+<td align="right">1509.45</td>
+<td align="right">-7197.00</td>
+<td align="right">-4299.00</td>
+<td align="right">-3254.00</td>
+<td align="right">-1720.00</td>
+<td align="right">0.00</td>
+<td align="left">▁▆▇▆▅</td>
+</tr>
+<tr class="odd">
+<td align="left">OWN_CAR_AGE</td>
+<td align="right">202929</td>
+<td align="right">0.34</td>
+<td align="right">12.06</td>
+<td align="right">11.94</td>
+<td align="right">0.00</td>
+<td align="right">5.00</td>
+<td align="right">9.00</td>
+<td align="right">15.00</td>
+<td align="right">91.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_MOBIL</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="left">▁▁▁▁▇</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_EMP_PHONE</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.82</td>
+<td align="right">0.38</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="left">▂▁▁▁▇</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_WORK_PHONE</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.20</td>
+<td align="right">0.40</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▂</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_CONT_MOBILE</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">0.04</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="left">▁▁▁▁▇</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_PHONE</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.28</td>
+<td align="right">0.45</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▃</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_EMAIL</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.06</td>
+<td align="right">0.23</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">CNT_FAM_MEMBERS</td>
+<td align="right">2</td>
+<td align="right">1.00</td>
+<td align="right">2.15</td>
+<td align="right">0.91</td>
+<td align="right">1.00</td>
+<td align="right">2.00</td>
+<td align="right">2.00</td>
+<td align="right">3.00</td>
+<td align="right">20.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">REGION_RATING_CLIENT</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">2.05</td>
+<td align="right">0.51</td>
+<td align="right">1.00</td>
+<td align="right">2.00</td>
+<td align="right">2.00</td>
+<td align="right">2.00</td>
+<td align="right">3.00</td>
+<td align="left">▁▁▇▁▂</td>
+</tr>
+<tr class="even">
+<td align="left">REGION_RATING_CLIENT_W_CITY</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">2.03</td>
+<td align="right">0.50</td>
+<td align="right">1.00</td>
+<td align="right">2.00</td>
+<td align="right">2.00</td>
+<td align="right">2.00</td>
+<td align="right">3.00</td>
+<td align="left">▁▁▇▁▂</td>
+</tr>
+<tr class="odd">
+<td align="left">HOUR_APPR_PROCESS_START</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">12.06</td>
+<td align="right">3.27</td>
+<td align="right">0.00</td>
+<td align="right">10.00</td>
+<td align="right">12.00</td>
+<td align="right">14.00</td>
+<td align="right">23.00</td>
+<td align="left">▁▃▇▆▁</td>
+</tr>
+<tr class="even">
+<td align="left">REG_REGION_NOT_LIVE_REGION</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.02</td>
+<td align="right">0.12</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">REG_REGION_NOT_WORK_REGION</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.05</td>
+<td align="right">0.22</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">LIVE_REGION_NOT_WORK_REGION</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.04</td>
+<td align="right">0.20</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">REG_CITY_NOT_LIVE_CITY</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.08</td>
+<td align="right">0.27</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">REG_CITY_NOT_WORK_CITY</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.23</td>
+<td align="right">0.42</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▂</td>
+</tr>
+<tr class="odd">
+<td align="left">LIVE_CITY_NOT_WORK_CITY</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.18</td>
+<td align="right">0.38</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▂</td>
+</tr>
+<tr class="even">
+<td align="left">EXT_SOURCE_1</td>
+<td align="right">173378</td>
+<td align="right">0.44</td>
+<td align="right">0.50</td>
+<td align="right">0.21</td>
+<td align="right">0.01</td>
+<td align="right">0.33</td>
+<td align="right">0.51</td>
+<td align="right">0.68</td>
+<td align="right">0.96</td>
+<td align="left">▂▇▇▇▃</td>
+</tr>
+<tr class="odd">
+<td align="left">EXT_SOURCE_2</td>
+<td align="right">660</td>
+<td align="right">1.00</td>
+<td align="right">0.51</td>
+<td align="right">0.19</td>
+<td align="right">0.00</td>
+<td align="right">0.39</td>
+<td align="right">0.57</td>
+<td align="right">0.66</td>
+<td align="right">0.85</td>
+<td align="left">▂▂▃▇▃</td>
+</tr>
+<tr class="even">
+<td align="left">EXT_SOURCE_3</td>
+<td align="right">60965</td>
+<td align="right">0.80</td>
+<td align="right">0.51</td>
+<td align="right">0.19</td>
+<td align="right">0.00</td>
+<td align="right">0.37</td>
+<td align="right">0.54</td>
+<td align="right">0.67</td>
+<td align="right">0.90</td>
+<td align="left">▂▃▆▇▃</td>
+</tr>
+<tr class="odd">
+<td align="left">APARTMENTS_AVG</td>
+<td align="right">156061</td>
+<td align="right">0.49</td>
+<td align="right">0.12</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.06</td>
+<td align="right">0.09</td>
+<td align="right">0.15</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">BASEMENTAREA_AVG</td>
+<td align="right">179943</td>
+<td align="right">0.41</td>
+<td align="right">0.09</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.04</td>
+<td align="right">0.08</td>
+<td align="right">0.11</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">YEARS_BEGINEXPLUATATION_AVG</td>
+<td align="right">150007</td>
+<td align="right">0.51</td>
+<td align="right">0.98</td>
+<td align="right">0.06</td>
+<td align="right">0.00</td>
+<td align="right">0.98</td>
+<td align="right">0.98</td>
+<td align="right">0.99</td>
+<td align="right">1.00</td>
+<td align="left">▁▁▁▁▇</td>
+</tr>
+<tr class="even">
+<td align="left">YEARS_BUILD_AVG</td>
+<td align="right">204488</td>
+<td align="right">0.34</td>
+<td align="right">0.75</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.69</td>
+<td align="right">0.76</td>
+<td align="right">0.82</td>
+<td align="right">1.00</td>
+<td align="left">▁▁▁▇▅</td>
+</tr>
+<tr class="odd">
+<td align="left">COMMONAREA_AVG</td>
+<td align="right">214865</td>
+<td align="right">0.30</td>
+<td align="right">0.04</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.01</td>
+<td align="right">0.02</td>
+<td align="right">0.05</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">ELEVATORS_AVG</td>
+<td align="right">163891</td>
+<td align="right">0.47</td>
+<td align="right">0.08</td>
+<td align="right">0.13</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.12</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">ENTRANCES_AVG</td>
+<td align="right">154828</td>
+<td align="right">0.50</td>
+<td align="right">0.15</td>
+<td align="right">0.10</td>
+<td align="right">0.00</td>
+<td align="right">0.07</td>
+<td align="right">0.14</td>
+<td align="right">0.21</td>
+<td align="right">1.00</td>
+<td align="left">▇▃▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLOORSMAX_AVG</td>
+<td align="right">153020</td>
+<td align="right">0.50</td>
+<td align="right">0.23</td>
+<td align="right">0.14</td>
+<td align="right">0.00</td>
+<td align="right">0.17</td>
+<td align="right">0.17</td>
+<td align="right">0.33</td>
+<td align="right">1.00</td>
+<td align="left">▇▃▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLOORSMIN_AVG</td>
+<td align="right">208642</td>
+<td align="right">0.32</td>
+<td align="right">0.23</td>
+<td align="right">0.16</td>
+<td align="right">0.00</td>
+<td align="right">0.08</td>
+<td align="right">0.21</td>
+<td align="right">0.38</td>
+<td align="right">1.00</td>
+<td align="left">▅▇▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">LANDAREA_AVG</td>
+<td align="right">182590</td>
+<td align="right">0.41</td>
+<td align="right">0.07</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.02</td>
+<td align="right">0.05</td>
+<td align="right">0.09</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">LIVINGAPARTMENTS_AVG</td>
+<td align="right">210199</td>
+<td align="right">0.32</td>
+<td align="right">0.10</td>
+<td align="right">0.09</td>
+<td align="right">0.00</td>
+<td align="right">0.05</td>
+<td align="right">0.08</td>
+<td align="right">0.12</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">LIVINGAREA_AVG</td>
+<td align="right">154350</td>
+<td align="right">0.50</td>
+<td align="right">0.11</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.05</td>
+<td align="right">0.07</td>
+<td align="right">0.13</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">NONLIVINGAPARTMENTS_AVG</td>
+<td align="right">213514</td>
+<td align="right">0.31</td>
+<td align="right">0.01</td>
+<td align="right">0.05</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">NONLIVINGAREA_AVG</td>
+<td align="right">169682</td>
+<td align="right">0.45</td>
+<td align="right">0.03</td>
+<td align="right">0.07</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.03</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">APARTMENTS_MODE</td>
+<td align="right">156061</td>
+<td align="right">0.49</td>
+<td align="right">0.11</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.05</td>
+<td align="right">0.08</td>
+<td align="right">0.14</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">BASEMENTAREA_MODE</td>
+<td align="right">179943</td>
+<td align="right">0.41</td>
+<td align="right">0.09</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.04</td>
+<td align="right">0.07</td>
+<td align="right">0.11</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">YEARS_BEGINEXPLUATATION_MODE</td>
+<td align="right">150007</td>
+<td align="right">0.51</td>
+<td align="right">0.98</td>
+<td align="right">0.06</td>
+<td align="right">0.00</td>
+<td align="right">0.98</td>
+<td align="right">0.98</td>
+<td align="right">0.99</td>
+<td align="right">1.00</td>
+<td align="left">▁▁▁▁▇</td>
+</tr>
+<tr class="even">
+<td align="left">YEARS_BUILD_MODE</td>
+<td align="right">204488</td>
+<td align="right">0.34</td>
+<td align="right">0.76</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.70</td>
+<td align="right">0.76</td>
+<td align="right">0.82</td>
+<td align="right">1.00</td>
+<td align="left">▁▁▁▇▅</td>
+</tr>
+<tr class="odd">
+<td align="left">COMMONAREA_MODE</td>
+<td align="right">214865</td>
+<td align="right">0.30</td>
+<td align="right">0.04</td>
+<td align="right">0.07</td>
+<td align="right">0.00</td>
+<td align="right">0.01</td>
+<td align="right">0.02</td>
+<td align="right">0.05</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">ELEVATORS_MODE</td>
+<td align="right">163891</td>
+<td align="right">0.47</td>
+<td align="right">0.07</td>
+<td align="right">0.13</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.12</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">ENTRANCES_MODE</td>
+<td align="right">154828</td>
+<td align="right">0.50</td>
+<td align="right">0.15</td>
+<td align="right">0.10</td>
+<td align="right">0.00</td>
+<td align="right">0.07</td>
+<td align="right">0.14</td>
+<td align="right">0.21</td>
+<td align="right">1.00</td>
+<td align="left">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLOORSMAX_MODE</td>
+<td align="right">153020</td>
+<td align="right">0.50</td>
+<td align="right">0.22</td>
+<td align="right">0.14</td>
+<td align="right">0.00</td>
+<td align="right">0.17</td>
+<td align="right">0.17</td>
+<td align="right">0.33</td>
+<td align="right">1.00</td>
+<td align="left">▇▃▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLOORSMIN_MODE</td>
+<td align="right">208642</td>
+<td align="right">0.32</td>
+<td align="right">0.23</td>
+<td align="right">0.16</td>
+<td align="right">0.00</td>
+<td align="right">0.08</td>
+<td align="right">0.21</td>
+<td align="right">0.38</td>
+<td align="right">1.00</td>
+<td align="left">▅▇▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">LANDAREA_MODE</td>
+<td align="right">182590</td>
+<td align="right">0.41</td>
+<td align="right">0.06</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.02</td>
+<td align="right">0.05</td>
+<td align="right">0.08</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">LIVINGAPARTMENTS_MODE</td>
+<td align="right">210199</td>
+<td align="right">0.32</td>
+<td align="right">0.11</td>
+<td align="right">0.10</td>
+<td align="right">0.00</td>
+<td align="right">0.05</td>
+<td align="right">0.08</td>
+<td align="right">0.13</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">LIVINGAREA_MODE</td>
+<td align="right">154350</td>
+<td align="right">0.50</td>
+<td align="right">0.11</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.04</td>
+<td align="right">0.07</td>
+<td align="right">0.13</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">NONLIVINGAPARTMENTS_MODE</td>
+<td align="right">213514</td>
+<td align="right">0.31</td>
+<td align="right">0.01</td>
+<td align="right">0.05</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">NONLIVINGAREA_MODE</td>
+<td align="right">169682</td>
+<td align="right">0.45</td>
+<td align="right">0.03</td>
+<td align="right">0.07</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.02</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">APARTMENTS_MEDI</td>
+<td align="right">156061</td>
+<td align="right">0.49</td>
+<td align="right">0.12</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.06</td>
+<td align="right">0.09</td>
+<td align="right">0.15</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">BASEMENTAREA_MEDI</td>
+<td align="right">179943</td>
+<td align="right">0.41</td>
+<td align="right">0.09</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.04</td>
+<td align="right">0.08</td>
+<td align="right">0.11</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">YEARS_BEGINEXPLUATATION_MEDI</td>
+<td align="right">150007</td>
+<td align="right">0.51</td>
+<td align="right">0.98</td>
+<td align="right">0.06</td>
+<td align="right">0.00</td>
+<td align="right">0.98</td>
+<td align="right">0.98</td>
+<td align="right">0.99</td>
+<td align="right">1.00</td>
+<td align="left">▁▁▁▁▇</td>
+</tr>
+<tr class="even">
+<td align="left">YEARS_BUILD_MEDI</td>
+<td align="right">204488</td>
+<td align="right">0.34</td>
+<td align="right">0.76</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.69</td>
+<td align="right">0.76</td>
+<td align="right">0.83</td>
+<td align="right">1.00</td>
+<td align="left">▁▁▁▇▅</td>
+</tr>
+<tr class="odd">
+<td align="left">COMMONAREA_MEDI</td>
+<td align="right">214865</td>
+<td align="right">0.30</td>
+<td align="right">0.04</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.01</td>
+<td align="right">0.02</td>
+<td align="right">0.05</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">ELEVATORS_MEDI</td>
+<td align="right">163891</td>
+<td align="right">0.47</td>
+<td align="right">0.08</td>
+<td align="right">0.13</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.12</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">ENTRANCES_MEDI</td>
+<td align="right">154828</td>
+<td align="right">0.50</td>
+<td align="right">0.15</td>
+<td align="right">0.10</td>
+<td align="right">0.00</td>
+<td align="right">0.07</td>
+<td align="right">0.14</td>
+<td align="right">0.21</td>
+<td align="right">1.00</td>
+<td align="left">▇▃▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLOORSMAX_MEDI</td>
+<td align="right">153020</td>
+<td align="right">0.50</td>
+<td align="right">0.23</td>
+<td align="right">0.15</td>
+<td align="right">0.00</td>
+<td align="right">0.17</td>
+<td align="right">0.17</td>
+<td align="right">0.33</td>
+<td align="right">1.00</td>
+<td align="left">▇▃▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLOORSMIN_MEDI</td>
+<td align="right">208642</td>
+<td align="right">0.32</td>
+<td align="right">0.23</td>
+<td align="right">0.16</td>
+<td align="right">0.00</td>
+<td align="right">0.08</td>
+<td align="right">0.21</td>
+<td align="right">0.38</td>
+<td align="right">1.00</td>
+<td align="left">▅▇▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">LANDAREA_MEDI</td>
+<td align="right">182590</td>
+<td align="right">0.41</td>
+<td align="right">0.07</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.02</td>
+<td align="right">0.05</td>
+<td align="right">0.09</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">LIVINGAPARTMENTS_MEDI</td>
+<td align="right">210199</td>
+<td align="right">0.32</td>
+<td align="right">0.10</td>
+<td align="right">0.09</td>
+<td align="right">0.00</td>
+<td align="right">0.05</td>
+<td align="right">0.08</td>
+<td align="right">0.12</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">LIVINGAREA_MEDI</td>
+<td align="right">154350</td>
+<td align="right">0.50</td>
+<td align="right">0.11</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.05</td>
+<td align="right">0.07</td>
+<td align="right">0.13</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">NONLIVINGAPARTMENTS_MEDI</td>
+<td align="right">213514</td>
+<td align="right">0.31</td>
+<td align="right">0.01</td>
+<td align="right">0.05</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">NONLIVINGAREA_MEDI</td>
+<td align="right">169682</td>
+<td align="right">0.45</td>
+<td align="right">0.03</td>
+<td align="right">0.07</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.03</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">TOTALAREA_MODE</td>
+<td align="right">148431</td>
+<td align="right">0.52</td>
+<td align="right">0.10</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.04</td>
+<td align="right">0.07</td>
+<td align="right">0.13</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">OBS_30_CNT_SOCIAL_CIRCLE</td>
+<td align="right">1021</td>
+<td align="right">1.00</td>
+<td align="right">1.42</td>
+<td align="right">2.40</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">2.00</td>
+<td align="right">348.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">DEF_30_CNT_SOCIAL_CIRCLE</td>
+<td align="right">1021</td>
+<td align="right">1.00</td>
+<td align="right">0.14</td>
+<td align="right">0.45</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">34.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">OBS_60_CNT_SOCIAL_CIRCLE</td>
+<td align="right">1021</td>
+<td align="right">1.00</td>
+<td align="right">1.41</td>
+<td align="right">2.38</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">2.00</td>
+<td align="right">344.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">DEF_60_CNT_SOCIAL_CIRCLE</td>
+<td align="right">1021</td>
+<td align="right">1.00</td>
+<td align="right">0.10</td>
+<td align="right">0.36</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">24.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">DAYS_LAST_PHONE_CHANGE</td>
+<td align="right">1</td>
+<td align="right">1.00</td>
+<td align="right">-962.86</td>
+<td align="right">826.81</td>
+<td align="right">-4292.00</td>
+<td align="right">-1570.00</td>
+<td align="right">-757.00</td>
+<td align="right">-274.00</td>
+<td align="right">0.00</td>
+<td align="left">▁▁▂▃▇</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_2</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.01</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_3</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.71</td>
+<td align="right">0.45</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="left">▃▁▁▁▇</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_4</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.01</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_5</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.02</td>
+<td align="right">0.12</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_6</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.09</td>
+<td align="right">0.28</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_7</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.01</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_8</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.08</td>
+<td align="right">0.27</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_9</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.06</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_10</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_11</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.06</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_12</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_13</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.06</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_14</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.05</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_15</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.03</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_16</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.01</td>
+<td align="right">0.10</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_17</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.02</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_18</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.01</td>
+<td align="right">0.09</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_19</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.02</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">FLAG_DOCUMENT_20</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.02</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">FLAG_DOCUMENT_21</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.00</td>
+<td align="right">0.02</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">AMT_REQ_CREDIT_BUREAU_HOUR</td>
+<td align="right">41519</td>
+<td align="right">0.86</td>
+<td align="right">0.01</td>
+<td align="right">0.08</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">4.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">AMT_REQ_CREDIT_BUREAU_DAY</td>
+<td align="right">41519</td>
+<td align="right">0.86</td>
+<td align="right">0.01</td>
+<td align="right">0.11</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">9.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">AMT_REQ_CREDIT_BUREAU_WEEK</td>
+<td align="right">41519</td>
+<td align="right">0.86</td>
+<td align="right">0.03</td>
+<td align="right">0.20</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">8.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">AMT_REQ_CREDIT_BUREAU_MON</td>
+<td align="right">41519</td>
+<td align="right">0.86</td>
+<td align="right">0.27</td>
+<td align="right">0.92</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">27.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">AMT_REQ_CREDIT_BUREAU_QRT</td>
+<td align="right">41519</td>
+<td align="right">0.86</td>
+<td align="right">0.27</td>
+<td align="right">0.79</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">261.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">AMT_REQ_CREDIT_BUREAU_YEAR</td>
+<td align="right">41519</td>
+<td align="right">0.86</td>
+<td align="right">1.90</td>
+<td align="right">1.87</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1.00</td>
+<td align="right">3.00</td>
+<td align="right">25.00</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>skm &lt;- skim(data)
+select(skm, skim_variable, n_missing, complete_rate) %&gt;% filter(n_missing &gt; 0) %&gt;% arrange(complete_rate)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["skim_variable"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n_missing"],"name":[2],"type":["int"],"align":["right"]},{"label":["complete_rate"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"COMMONAREA_AVG","2":"214865","3":"0.3012770"},{"1":"COMMONAREA_MODE","2":"214865","3":"0.3012770"},{"1":"COMMONAREA_MEDI","2":"214865","3":"0.3012770"},{"1":"NONLIVINGAPARTMENTS_AVG","2":"213514","3":"0.3056704"},{"1":"NONLIVINGAPARTMENTS_MODE","2":"213514","3":"0.3056704"},{"1":"NONLIVINGAPARTMENTS_MEDI","2":"213514","3":"0.3056704"},{"1":"LIVINGAPARTMENTS_AVG","2":"210199","3":"0.3164505"},{"1":"LIVINGAPARTMENTS_MODE","2":"210199","3":"0.3164505"},{"1":"LIVINGAPARTMENTS_MEDI","2":"210199","3":"0.3164505"},{"1":"FLOORSMIN_AVG","2":"208642","3":"0.3215137"},{"1":"FLOORSMIN_MODE","2":"208642","3":"0.3215137"},{"1":"FLOORSMIN_MEDI","2":"208642","3":"0.3215137"},{"1":"YEARS_BUILD_AVG","2":"204488","3":"0.3350222"},{"1":"YEARS_BUILD_MODE","2":"204488","3":"0.3350222"},{"1":"YEARS_BUILD_MEDI","2":"204488","3":"0.3350222"},{"1":"OWN_CAR_AGE","2":"202929","3":"0.3400919"},{"1":"LANDAREA_AVG","2":"182590","3":"0.4062326"},{"1":"LANDAREA_MODE","2":"182590","3":"0.4062326"},{"1":"LANDAREA_MEDI","2":"182590","3":"0.4062326"},{"1":"BASEMENTAREA_AVG","2":"179943","3":"0.4148404"},{"1":"BASEMENTAREA_MODE","2":"179943","3":"0.4148404"},{"1":"BASEMENTAREA_MEDI","2":"179943","3":"0.4148404"},{"1":"EXT_SOURCE_1","2":"173378","3":"0.4361893"},{"1":"NONLIVINGAREA_AVG","2":"169682","3":"0.4482084"},{"1":"NONLIVINGAREA_MODE","2":"169682","3":"0.4482084"},{"1":"NONLIVINGAREA_MEDI","2":"169682","3":"0.4482084"},{"1":"ELEVATORS_AVG","2":"163891","3":"0.4670402"},{"1":"ELEVATORS_MODE","2":"163891","3":"0.4670402"},{"1":"ELEVATORS_MEDI","2":"163891","3":"0.4670402"},{"1":"APARTMENTS_AVG","2":"156061","3":"0.4925027"},{"1":"APARTMENTS_MODE","2":"156061","3":"0.4925027"},{"1":"APARTMENTS_MEDI","2":"156061","3":"0.4925027"},{"1":"ENTRANCES_AVG","2":"154828","3":"0.4965123"},{"1":"ENTRANCES_MODE","2":"154828","3":"0.4965123"},{"1":"ENTRANCES_MEDI","2":"154828","3":"0.4965123"},{"1":"LIVINGAREA_AVG","2":"154350","3":"0.4980667"},{"1":"LIVINGAREA_MODE","2":"154350","3":"0.4980667"},{"1":"LIVINGAREA_MEDI","2":"154350","3":"0.4980667"},{"1":"FLOORSMAX_AVG","2":"153020","3":"0.5023918"},{"1":"FLOORSMAX_MODE","2":"153020","3":"0.5023918"},{"1":"FLOORSMAX_MEDI","2":"153020","3":"0.5023918"},{"1":"YEARS_BEGINEXPLUATATION_AVG","2":"150007","3":"0.5121898"},{"1":"YEARS_BEGINEXPLUATATION_MODE","2":"150007","3":"0.5121898"},{"1":"YEARS_BEGINEXPLUATATION_MEDI","2":"150007","3":"0.5121898"},{"1":"TOTALAREA_MODE","2":"148431","3":"0.5173148"},{"1":"EXT_SOURCE_3","2":"60965","3":"0.8017469"},{"1":"AMT_REQ_CREDIT_BUREAU_HOUR","2":"41519","3":"0.8649837"},{"1":"AMT_REQ_CREDIT_BUREAU_DAY","2":"41519","3":"0.8649837"},{"1":"AMT_REQ_CREDIT_BUREAU_WEEK","2":"41519","3":"0.8649837"},{"1":"AMT_REQ_CREDIT_BUREAU_MON","2":"41519","3":"0.8649837"},{"1":"AMT_REQ_CREDIT_BUREAU_QRT","2":"41519","3":"0.8649837"},{"1":"AMT_REQ_CREDIT_BUREAU_YEAR","2":"41519","3":"0.8649837"},{"1":"OBS_30_CNT_SOCIAL_CIRCLE","2":"1021","3":"0.9966798"},{"1":"DEF_30_CNT_SOCIAL_CIRCLE","2":"1021","3":"0.9966798"},{"1":"OBS_60_CNT_SOCIAL_CIRCLE","2":"1021","3":"0.9966798"},{"1":"DEF_60_CNT_SOCIAL_CIRCLE","2":"1021","3":"0.9966798"},{"1":"EXT_SOURCE_2","2":"660","3":"0.9978537"},{"1":"AMT_GOODS_PRICE","2":"278","3":"0.9990960"},{"1":"AMT_ANNUITY","2":"12","3":"0.9999610"},{"1":"CNT_FAM_MEMBERS","2":"2","3":"0.9999935"},{"1":"DAYS_LAST_PHONE_CHANGE","2":"1","3":"0.9999967"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Suggestion: Be alert to problems in the data. Do the values make
+sense? Are there mistaken values that should be cleaned or imputed?
+(Note that outliers are not necessarily mistakes. Check APM for advice
+on how to handle outliers for a predictive project.) Are there columns
+with near-zero or zero variance?</p>
 
 
 

@@ -9,17 +9,19 @@ output:
 
 Suggestion: Explore the scope of missing data in application{train|test}.csv and come up with possible solutions. Remove rows?  Remove columns?  Impute?
 
-```{r libraries, echo=FALSE}
+```{r libraries, echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
 library(skimr)
 
 ```
 
-```{r load data}
+```{r load data, echo=FALSE, warning=FALSE}
 data <- read.csv('../data/application_train.csv')
+```
+```{r skimr analysis}
 skim(data)
 skm <- skim(data)
-skm$n_missing
-skm$n_unique
+select(skm, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
 ```
 
 Suggestion: Be alert to problems in the data.  Do the values make sense? Are there mistaken values that should be cleaned or imputed? (Note that outliers are not necessarily mistakes. Check APM for advice on how to handle outliers for a predictive project.) Are there columns with near-zero or zero variance?
