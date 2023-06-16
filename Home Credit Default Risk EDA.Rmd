@@ -67,16 +67,21 @@ plot_DEF_60 <- ggplot(social_data_df, aes(DEF_60_CNT_SOCIAL_CIRCLE)) +
   geom_histogram()
 
 grid.arrange(plot_OBS_30,plot_DEF_30,plot_OBS_60,plot_DEF_60, ncol=2, top=textGrob('Social Circle Variable Distribution'))
-
-  
-# Delete rows with missing social data
-# data_no_social_na <- data %>% filter(!is.na(OBS_30_CNT_SOCIAL_CIRCLE))
 ```
+Given that there are relatively few rows with missing data and the data is heavily right-skewed, it is proposed that missing data in these columns be replaced with imputed zero values (*median*= 0),
+
 ### External Source Data
-
+Included in the dataset are 3 externally sourced scores which have been normalized.  There is wide variation in the number of values missing in each of these sources ($NA_1=173378$,$NA_2=660$,$NA_3=60965$).  
 ```{r External Source Data, echo=FALSE}
+summary(data %>% select(EXT_SOURCE_1,EXT_SOURCE_2,EXT_SOURCE_3))
 # Select rows with no External Source Data
-data %>% filter(is.na(EXT_SOURCE_1) & is.na(EXT_SOURCE_2) & is.na(EXT_SOURCE_3))
+n_empty_ext <- nrow(data %>% filter(is.na(EXT_SOURCE_1) & is.na(EXT_SOURCE_2) & is.na(EXT_SOURCE_3)))
 ```
+Removing rows with missing data would shrink the dataset considerably.  Imputation with the mean value for each column is a possibility.  Another option is to create a new variable combining the scores into an AVG_EXT_SCORE since they are all normalized values.  The benefit to this approach is that only `r n_empty_ext` rows have no value for any of the 3 columns and so very little data would need to be imputed or removed.  This approach takes advantage of available information, while reducing missing data.  However it is possible that some information loss will occur with this approach if one of these sources turns out to be much more informative than one or both of the others.
+
+### Credit Bureau Data
+
+
+
 
 Suggestion: Be alert to problems in the data.  Do the values make sense? Are there mistaken values that should be cleaned or imputed? (Note that outliers are not necessarily mistakes. Check APM for advice on how to handle outliers for a predictive project.) Are there columns with near-zero or zero variance?
