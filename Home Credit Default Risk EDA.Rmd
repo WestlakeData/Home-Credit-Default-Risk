@@ -7,8 +7,6 @@ output:
     df_print: paged
 ---
 
-Suggestion: Explore the scope of missing data in application{train|test}.csv and come up with possible solutions. Remove rows?  Remove columns?  Impute?
-
 ```{r libraries, echo=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
 library(skimr)
@@ -80,8 +78,25 @@ n_empty_ext <- nrow(data %>% filter(is.na(EXT_SOURCE_1) & is.na(EXT_SOURCE_2) & 
 Removing rows with missing data would shrink the dataset considerably.  Imputation with the mean value for each column is a possibility.  Another option is to create a new variable combining the scores into an AVG_EXT_SCORE since they are all normalized values.  The benefit to this approach is that only `r n_empty_ext` rows have no value for any of the 3 columns and so very little data would need to be imputed or removed.  This approach takes advantage of available information, while reducing missing data.  However it is possible that some information loss will occur with this approach if one of these sources turns out to be much more informative than one or both of the others.
 
 ### Credit Bureau Data
+The final large group of related data deals with credit inquiries from the credit bureau over the previous year.  These are divided into the hour, day, week, month, quarter, and year (each time period is exclusive of the time period before it).  This data is strongly right-skewed and is 86.5% complete (NAs = 41519).
+
+```{r Credit Bureau Data}
+summary(data %>% select(AMT_REQ_CREDIT_BUREAU_HOUR,AMT_REQ_CREDIT_BUREAU_DAY,AMT_REQ_CREDIT_BUREAU_WEEK,AMT_REQ_CREDIT_BUREAU_MON,
+                        AMT_REQ_CREDIT_BUREAU_QRT,AMT_REQ_CREDIT_BUREAU_YEAR))
 
 
+```
+While we could remove the 41519 rows missing data, the loss of other information in those records might be valuable, and so it is proposed to impute the missing values with the median value for each column, in most cases this is 0.
+
+### Other Data
+There are a few remaining columns that contain missing data OWN_CAR_AGE, AMT_GOODS_PRICE, AMT_ANNUITY, CNT_FAM_MEMBERS,and DAYS_LAST_PHONE_CHANGE. Of these columns only OWN_CAR_AGE has a significant number of missing values.  There is another column which is related to car ownership, FLAG_OWN_CAR, which is a boolean field.  Upon closer inspection it is evident that all of those records where FLAG_OWN_CAR = 'N' contain NAs, conversely only 5 records with a FLAG_OWN_CAR = 'Y' contain missing values.
+```{r}
+library(gmodels)
+CrossTable(data$FLAG_OWN_CAR, is.na(data$OWN_CAR_AGE), prop.r = F, prop.c = F, prop.chisq = F, dnn = c('Owns Car','Contains Missing Values'))
+```
+Therefore, it is proposed to remove these 5 records, and to convert the OWN_CAR_AGE into a factor variable with levels: No Car Owned, 0-3 years, 4-6 years, etc.
+
+The other columns contain so few observations that it is proposed that those rows with missing values be excluded.
 
 
 Suggestion: Be alert to problems in the data.  Do the values make sense? Are there mistaken values that should be cleaned or imputed? (Note that outliers are not necessarily mistakes. Check APM for advice on how to handle outliers for a predictive project.) Are there columns with near-zero or zero variance?
