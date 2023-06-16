@@ -12,16 +12,71 @@ Suggestion: Explore the scope of missing data in application{train|test}.csv and
 ```{r libraries, echo=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
 library(skimr)
+library(ggplot2)
+library(gridExtra)
+library(grid)
 
 ```
 
 ```{r load data, echo=FALSE, warning=FALSE}
 data <- read.csv('../data/application_train.csv')
 ```
+## Missing Data
+The dataset is highly dimensional and has 121 independent variables listed.  It is important to understand the degree of completeness of these variables in order to determine their usefulness in the model building phase of the project.
 ```{r skimr analysis}
-skim(data)
 skm <- skim(data)
-select(skm, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
+# Create DF showing Columns with missing data
+skm_missing <- select(skm, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
+skm_missing
+```
+Of the 121 independent variables, it turns out half (61 rows) have missing data.  Before determining what to do about each of these variables (removal, imputation, etc.) it is important to examine the columns and have a better understanding of what each of these columns may contribute in terms of useful information towards solving the eventual question of whether or not the customer is likely to default on the loan.
+
+### Housing Information
+Of the 61 variables that have missing data, 47 of these variables describe the housing of applicant in significant detail.  While an understanding of the housing situation is likely to be informative of the customer's default risk, the detail provided is probably not necessary, much of the important information is included in NAME_HOUSING_TYPE and FLAG_OWN_REALTY which are both complete.  It may be informative to disaggregate those that live in a house as opposed to an apartment, and we can look further into this possibility. However, inclusion of these 47 variables in the final model is probably unnecessary and so missing values in these columns can be ignored. 
+
+#### Remaining Columns (to be deleted)
+```{r non-housing missing variables, echo=FALSE}
+housing_stats_cols <- c('APARTMENTS_AVG','BASEMENTAREA_AVG','YEARS_BEGINEXPLUATATION_AVG','YEARS_BUILD_AVG','COMMONAREA_AVG',
+                        'ELEVATORS_AVG','ENTRANCES_AVG','FLOORSMAX_AVG','FLOORSMIN_AVG','LANDAREA_AVG','LIVINGAPARTMENTS_AVG',
+                        'LIVINGAREA_AVG','NONLIVINGAPARTMENTS_AVG','NONLIVINGAREA_AVG','APARTMENTS_MODE','BASEMENTAREA_MODE',
+                        'YEARS_BEGINEXPLUATATION_MODE','YEARS_BUILD_MODE','COMMONAREA_MODE','ELEVATORS_MODE','ENTRANCES_MODE',
+                        'FLOORSMAX_MODE','FLOORSMIN_MODE','LANDAREA_MODE','LIVINGAPARTMENTS_MODE','LIVINGAREA_MODE',
+                        'NONLIVINGAPARTMENTS_MODE','NONLIVINGAREA_MODE','APARTMENTS_MEDI','BASEMENTAREA_MEDI',
+                        'YEARS_BEGINEXPLUATATION_MEDI','YEARS_BUILD_MEDI','COMMONAREA_MEDI','ELEVATORS_MEDI','ENTRANCES_MEDI',
+                        'FLOORSMAX_MEDI','FLOORSMIN_MEDI','LANDAREA_MEDI','LIVINGAPARTMENTS_MEDI','LIVINGAREA_MEDI',
+                        'NONLIVINGAPARTMENTS_MEDI','NONLIVINGAREA_MEDI','FONDKAPREMONT_MODE','HOUSETYPE_MODE','TOTALAREA_MODE',
+                        'WALLSMATERIAL_MODE','EMERGENCYSTATE_MODE')
+# Remove housing data columms
+skm_missing %>% filter(!skim_variable %in% housing_stats_cols)
+```
+### Social Circle Data
+Looking at the remaining columns with missing data 4 of them contain information about the applicant's social circle and the 30-day and 60-day days past due default status, there is minimal missing data (n=1021)
+
+```{r social circle data, message=FALSE, warning=FALSE}
+social_data_df <- data %>% select(OBS_30_CNT_SOCIAL_CIRCLE,DEF_30_CNT_SOCIAL_CIRCLE,OBS_60_CNT_SOCIAL_CIRCLE,
+                                  DEF_60_CNT_SOCIAL_CIRCLE)
+summary(social_data_df)
+
+plot_OBS_30 <- ggplot(social_data_df, aes(OBS_30_CNT_SOCIAL_CIRCLE)) +
+  geom_histogram()
+plot_DEF_30 <- ggplot(social_data_df, aes(DEF_30_CNT_SOCIAL_CIRCLE)) +
+  geom_histogram()
+plot_OBS_60 <- ggplot(social_data_df, aes(OBS_60_CNT_SOCIAL_CIRCLE)) +
+  geom_histogram()
+plot_DEF_60 <- ggplot(social_data_df, aes(DEF_60_CNT_SOCIAL_CIRCLE)) +
+  geom_histogram()
+
+grid.arrange(plot_OBS_30,plot_DEF_30,plot_OBS_60,plot_DEF_60, ncol=2, top=textGrob('Social Circle Variable Distribution'))
+
+  
+# Delete rows with missing social data
+# data_no_social_na <- data %>% filter(!is.na(OBS_30_CNT_SOCIAL_CIRCLE))
+```
+### External Source Data
+
+```{r External Source Data, echo=FALSE}
+# Select rows with no External Source Data
+data %>% filter(is.na(EXT_SOURCE_1) & is.na(EXT_SOURCE_2) & is.na(EXT_SOURCE_3))
 ```
 
 Suggestion: Be alert to problems in the data.  Do the values make sense? Are there mistaken values that should be cleaned or imputed? (Note that outliers are not necessarily mistakes. Check APM for advice on how to handle outliers for a predictive project.) Are there columns with near-zero or zero variance?
