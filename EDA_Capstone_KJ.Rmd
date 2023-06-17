@@ -21,7 +21,7 @@ library(reshape2)
 # 2. Reading train file
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
 #Read application_train.csv file
-app_train <- read.csv("application_train.csv")
+app_train <- read.csv("../data/application_train.csv")
 
 ```
 
@@ -50,7 +50,7 @@ table(app_train$TARGET)
 ## Here 24825 clients are observed to have payment difficulties, whereas 282686 people have no payment difficulties. 
 
 # 6. Visualize count distribution of target variable
-```{r}
+```{r warning=FALSE}
 library(ggplot2)
 ggplot(app_train, aes(x = as.factor(TARGET))) +
   geom_bar(fill = "steelblue") +

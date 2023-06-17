@@ -1,7 +1,7 @@
 ---
 title: "Home Credit Default Risk"
 subtitle: "EDA"
-author: "Chris Porter"
+author: "Roman Brock, Che Diaz Fadel, Kalyani Joshi, and Chris Porter"
 output:
   html_document:
     df_print: paged
@@ -13,7 +13,6 @@ library(skimr)
 library(ggplot2)
 library(gridExtra)
 library(grid)
-
 ```
 
 ```{r load data, echo=FALSE, warning=FALSE}
