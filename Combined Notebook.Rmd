@@ -9,6 +9,7 @@ output:
     fig_width: 15
     fig_height: 10
     highlight: tango
+    df_print: paged
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
@@ -38,6 +39,24 @@ soutlier <- function(x, lower = FALSE){
   }
 }
 ```
+
+#Introduction
+Unbanked individuals represent both an underserved demographic as well as a typically
+untapped market by reputable creditors. Home Credit seeks to fill this gap in service. There are
+unique challenges that accompany establishing creditworthiness among a population that by
+definition has little to no financial history, verifiable assets, or traditional means to qualify for a
+loan.
+## Project Scope
+This project will utilize machine learning algorithms to develop a classification model which will
+use available data about Home Credit customers to improve prediction of those that are likely to
+repay loans granted by Home Credit. The team will test a number of possible classification
+models in order to develop the most accurate model on data outside the training data. An
+added benefit of this project is the potential to identify possible additional data that might further
+inform the classification model. A successful model will provide greater predictive power than a
+simple prediction based upon majority class statistics and will allow Home Credit to loan to
+customers with confidence that repayment will in return grow available assets to the company in
+order to further its mission of providing credit to the underserved.
+
 # Load Libraries
 ```{r libraries}
 library(tidyverse)
@@ -50,7 +69,6 @@ library(reshape2)
 library(gridExtra)
 library(grid)
 library(gmodels)
-
 ```
 
 # Reading train file
@@ -60,7 +78,7 @@ app_train <- read.csv("../data/application_train.csv")
 
 ```
 
-# Viewing data
+# Description of Data
 ```{r}
 #View structure and summary of data
 str(app_train)
@@ -69,7 +87,8 @@ summary(app_train$TARGET)
 ```
 There are 307511 rows and 122 features including TARGET variable.The target is categorical variable classified as "0" for the loan was repaid on time with no difficulties and "1" indicating the client had payment difficulties. 
 
-# Missing Value check
+# Target Value Analysis
+## Missing Value check
 ```{r}
 #Checking missing value in target variable
 missing_count <- sum(is.na(app_train$TARGET))
@@ -77,14 +96,14 @@ missing_count
 ```
 There are no missing values in Target variable
 
-# Check count distribution of target variable
+## Check count distribution of target variable
 ```{r}
 # View count of clients in each class
 table(app_train$TARGET)
 ```
 Here 24825 clients are observed to have payment difficulties, whereas 282686 people have no payment difficulties. 
 
-# Visualize count distribution of target variable
+## Visualize count distribution of target variable
 ```{r}
 library(ggplot2)
 ggplot(app_train, aes(x = as.factor(TARGET))) +
@@ -103,9 +122,9 @@ Above Target variable distribution shows that majority clients come under no pay
 proportion <- prop.table(table(app_train$TARGET)) * 100
 proportion
 ```
-91.92% of the clients are observed to have no payment difficulties, 8.07% clients face payment difficulties.The data looks unbalaced with respect target variable as proportion for class 0 is much higher (91.92%) than that of class 1 (8.07%)
+91.92% of the clients are observed to have no payment difficulties, 8.07% clients face payment difficulties.The data looks unbalaced with respect target variable as proportion for class 0 is much higher (91.92%) than that of class 1 (8.07%). Special attention should also be given to model Sensitivity and Specificity.
 
-# Visualize the proportion of target variable
+## Visualize the proportion of target variable
 ```{r}
 
 # Calculate the proportion and convert it to percentages
@@ -128,7 +147,7 @@ print(pie_chart)
 ```
 
 
-# Determine accuracy for majority class classifier
+## Determine accuracy for majority class classifier
 ```{r}
 # Count of majority class
 majority_count <- max(table(app_train$TARGET))
@@ -143,7 +162,8 @@ accuracy
 ```
 The accuracy for majority class classifier "0" (client with no payment difficulties) is 91.92% which is same as the proportion of class "0" clients in the data.
 
-# Correlation of Target and Numeric Predictors
+# Correlation Analysis
+## Correlation of Target and Numeric Predictors
 ```{r}
 #Getting list of Top5 positive and top 5 negative predictors
 
@@ -206,7 +226,7 @@ ggplot(cor_top_predictors, aes(x = Variable1, y = Variable2, fill = Correlation)
 ```
 DAYS_BIRTH, REGION_RATING_CLIENT_W_CITY, REGION_RATING_CLIENT are the top 3 numerical predictors with positive correlation wrt TARGET, whereas EXT_SOURCE_3, EXT_SOURCE_2, EXT_SOURCE_1 are top 3 numerical predictors with negative correlation wrt TARGET.
 
-# Correlation of Target and Categorical Predictors
+## Correlation of Target and Categorical Predictors
 ```{r}
 # Select character variables
 character_vars <- app_train %>% 
@@ -258,6 +278,7 @@ ggplot(top_categorical_predictors, aes(x = variable, y = correlation, label = ro
 ```
 NAME_EDUCATION_TYPE, CODE_GENDER, NAME_INCOME_TYPE are the top 3 categorical predictors which has positive correlation wrt TARGET.
 
+# Explore Bureau Data
 Join application_{train|test}.csv with transactional data in, for example, bureau.csv or previous_application.csv. This will require aggregating the transactional data to have the same grain as the application data.
 
 ```{r}
@@ -265,12 +286,12 @@ data <- read.csv('../data/application_train.csv')
 data2 <- read.csv('../data/bureau.csv')
 ```
 
-```{r}
+```{r  results='hide'}
 head(data)
 summary(data)
 ```
 
-```{r}
+```{r results='hide'}
 head(data2)
 summary(data2)
 ```
@@ -306,7 +327,8 @@ skm_missing
 
 Some of these columns definitely show promise. There are 9 additional dimensions and only 5 of them have missing values. Of those 5 missing values, only 2 are missing more than half of their values. Only 2-3 of the 9 additional dimensions are missing substantial data.
 
-```{r}
+## Explore Joined Data
+```{r results='hide'}
 data3 <- left_join(data, data2, by = 'SK_ID_CURR')
 head(data3)
 summary(data3)
@@ -327,10 +349,11 @@ skm_missing2
 
 Avg_amt_credit_max_overdue only fills in about 9% of records and avg_amt_credit_sum_limit only matches about 28%. Those two variables may have to be thrown out, but all of the rest of them have matches of 50% or more. Many of the variables match a whopping 86% of records. This data is definitely usable and could be of value with the use of a model.
 
+# Missing Data
 ```{r load data}
 data <- read.csv('../data/application_train.csv')
 ```
-# Missing Data
+
 The dataset is highly dimensional and has 121 independent variables listed.  It is important to understand the degree of completeness of these variables in order to determine their usefulness in the model building phase of the project.
 ```{r skimr analysis}
 skm <- skim(data)
@@ -488,25 +511,12 @@ de_df <- data %>% filter(DAYS_EMPLOYED < 0)
 
 Finally, DAYS_EMPLOYED has significant data integrity issues.  The way the data is set up only values less than or equal to 0 should be permissible.  However, a significant number of rows (n = 55374) all have the same positive value, DAYS_EMPLOYED = 365243.  Not only should the value be negative, but the scale is also outside of realistic values (365243 days = 1000+ years).  Due to these rows comprising a significant portion of the data set (`r round(55374/nrow(data)*100,1)`%) removal would be detrimental to model accuracy, so it is proposed that the data be imputed for these rows, being replaced by the column median (median = `r median(de_df$DAYS_EMPLOYED)`)
 
+# Basic inspection of application train data
 ```{r}
 app_train <- read_csv("../data/application_train.csv") %>%
   rename_with(~tolower(.))
 
 ```
-
-# Basic inspection of application train data
-
-## Class proportions of target variable
-
-```{r}
-table(app_train$target)
-
-table(app_train$target) %>% 
-  prop.table() %>% 
-  round(3)
-```
-Only 8.1% of individuals in train set experience payment difficulties. In other words, the no-information rate is 92% which means model accuracy will need to exceed that in order to be meaningful/useful. Special attention should also be given to model Sensitivity and Specificity. 
-
 ## Scope of missing values
 
 ### Rowwise completeness 
