@@ -1,0 +1,82 @@
+---
+title: "EDA Notebook"
+author: "Roman Brock"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+install.packages("skimr")
+library(skimr)
+```
+
+Join application_{train|test}.csv with transactional data in, for example, bureau.csv or previous_application.csv. This will require aggregating the transactional data to have the same grain as the application data.
+
+```{r}
+data <- read.csv('home-credit-default-risk/application_train.csv')
+data2 <- read.csv('home-credit-default-risk/bureau.csv')
+```
+
+```{r}
+head(data)
+summary(data)
+```
+
+```{r}
+head(data2)
+summary(data2)
+```
+We can average together a select number of columns to condense the bureau table down to the client level from the credit level, which will help us join it to our application data (also at the client level).
+
+```{r}
+data2 <- group_by(data2,SK_ID_CURR) %>%
+  summarize(avg_days_credit = mean(DAYS_CREDIT),
+            avg_credit_day_overdue = mean(CREDIT_DAY_OVERDUE),
+            avg_days_credit_enddate = mean(DAYS_CREDIT_ENDDATE),
+            avg_amt_credit_max_overdue = mean(AMT_CREDIT_MAX_OVERDUE),
+            avg_cnt_credit_prolong = mean(CNT_CREDIT_PROLONG),
+            avg_amt_credit_sum = mean(AMT_CREDIT_SUM),
+            avg_amt_credit_sum_debt = mean(AMT_CREDIT_SUM_DEBT),
+            avg_amt_credit_sum_limit = mean(AMT_CREDIT_SUM_LIMIT),
+            avg_amt_credit_sum_overdue = mean(AMT_CREDIT_SUM_OVERDUE))
+head(data2)
+summary(data2)
+```
+
+Explore the joined transactional data.  Do some of the added columns show promise in predicting default?
+
+```{r, echo=FALSE}
+data2 %>%
+  select(everything()) %>%
+  summarise_all(funs(sum(is.na(.))))
+
+skm <- skim(data2)
+# Create DF showing Columns with missing data
+skm_missing <- select(skm, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
+skm_missing
+```
+
+Some of these columns definitely show promise. There are 9 additional dimensions and only 5 of them have missing values. Of those 5 missing values, only 2 are missing more than half of their values. Only 2-3 of the 9 additional dimensions are missing substantial data.
+
+```{r, echo=FALSE}
+data3 <- left_join(data, data2, by = 'SK_ID_CURR')
+head(data3)
+summary(data3)
+```
+
+Now that the data is joined, let's see how many records we could add additional dimensions to.
+
+```{r, echo=FALSE}
+data3 %>%
+  select(everything()) %>%
+  summarise_all(funs(sum(is.na(.))))
+
+skm2 <- skim(data3)
+# Create DF showing Columns with missing data
+skm_missing2 <- select(skm2, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
+skm_missing2
+```
+
+Avg_amt_credit_max_overdue only fills in about 9% of records and avg_amt_credit_sum_limit only matches about 28%. Those two variables may have to be thrown out, but all of the rest of them have matches of 50% or more. Many of the variables match a whopping 86% of records. This data is definitely usable and could be of value with the use of a model.
