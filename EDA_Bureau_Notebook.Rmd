@@ -7,16 +7,16 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library("tidyverse")
-install.packages("skimr")
+library(dplyr)
+#install.packages("skimr")
 library(skimr)
 ```
 
 Join application_{train|test}.csv with transactional data in, for example, bureau.csv or previous_application.csv. This will require aggregating the transactional data to have the same grain as the application data.
 
 ```{r}
-data <- read.csv('home-credit-default-risk/application_train.csv')
-data2 <- read.csv('home-credit-default-risk/bureau.csv')
+data <- read.csv('../data/application_train.csv')
+data2 <- read.csv('../data/bureau.csv')
 ```
 
 ```{r}
