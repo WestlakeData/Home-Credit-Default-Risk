@@ -1,0 +1,728 @@
+---
+title: "Home Credit Default Risk"
+subtitle: "EDA"
+author: "Roman Brock, Che Diaz Fadel, Kalyani Joshi, and Chris Porter"
+output: 
+  html_document:
+    number_sections: yes
+    toc: yes
+    fig_width: 15
+    fig_height: 10
+    highlight: tango
+    df_print: paged
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+# Set options ----
+options(tibble.print_max = 40,
+        tibble.print_min = 24,
+        width = 222,
+        pillar.min_title_chars = 15)
+
+# Custom functions/values ----
+psc <- function(x){
+  x %>%
+    print(n=56)
+}
+
+pall <- function(x){
+  x %>%
+    print(n=nrow(.))
+}
+
+soutlier <- function(x, lower = FALSE){
+  if (lower){
+    -(IQR(x, na.rm = TRUE) * 1.5) + quantile(x, names = FALSE, na.rm = TRUE)[2]
+  } else {
+    (IQR(x, na.rm = TRUE) * 1.5) + quantile(x, names = FALSE, na.rm = TRUE)[4]
+  }
+}
+```
+
+# Introduction  
+Unbanked individuals represent both an underserved demographic as well as a typically
+untapped market by reputable creditors. Home Credit seeks to fill this gap in service. There are
+unique challenges that accompany establishing creditworthiness among a population that by
+definition has little to no financial history, verifiable assets, or traditional means to qualify for a
+loan.
+
+## Project Scope
+This project will utilize machine learning algorithms to develop a classification model which will
+use available data about Home Credit customers to improve prediction of those that are likely to
+repay loans granted by Home Credit. The team will test a number of possible classification
+models in order to develop the most accurate model on data outside the training data. An
+added benefit of this project is the potential to identify possible additional data that might further
+inform the classification model. A successful model will provide greater predictive power than a
+simple prediction based upon majority class statistics and will allow Home Credit to loan to
+customers with confidence that repayment will in return grow available assets to the company in
+order to further its mission of providing credit to the underserved.
+
+Below, we explore the dataset and provide some preliminary analysis to determine if the dataset is adequate to move forward with data modelling.
+
+## Load Libraries
+```{r libraries}
+library(tidyverse)
+library(skimr)
+library(scales)
+library(ggplot2)
+library(corrplot)
+library(stringr)
+library(reshape2)
+library(gridExtra)
+library(grid)
+library(gmodels)
+```
+
+## Reading train file
+```{r}
+#Read application_train.csv file
+app_train <- read.csv("../data/application_train.csv")
+
+```
+
+# Description of Data
+```{r}
+#View structure and summary of data
+str(app_train)
+summary(app_train$TARGET)
+
+```
+There are 307511 rows and 122 features including TARGET variable.The target is categorical variable classified as "0" for the loan was repaid on time with no difficulties and "1" indicating the client had payment difficulties. 
+
+# Target Value Analysis
+## Missing Value check
+```{r}
+#Checking missing value in target variable
+missing_count <- sum(is.na(app_train$TARGET))
+missing_count
+```
+There are no missing values in Target variable
+
+## Check count distribution of target variable
+```{r}
+# View count of clients in each class
+table(app_train$TARGET)
+```
+Here 24825 clients are observed to have payment difficulties, whereas 282686 people have no payment difficulties. 
+
+## Visualize count distribution of target variable
+```{r}
+library(ggplot2)
+ggplot(app_train, aes(x = as.factor(TARGET))) +
+  geom_bar(fill = "steelblue") +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, color = "black", size = 3) +
+  labs(x = "Target Variable", y = "Count") +
+  ggtitle("Distribution of the Target Variable") +
+  scale_y_continuous(breaks = seq(0, max(table(app_train$TARGET)), by = 50000))
+
+
+```
+Above Target variable distribution shows that majority clients come under no payment difficulties class(0), only 24825 clients have payment difficulties.
+
+```{r}
+# View the proportion of target variable
+proportion <- prop.table(table(app_train$TARGET)) * 100
+proportion
+```
+91.92% of the clients are observed to have no payment difficulties, 8.07% clients face payment difficulties.The data looks unbalaced with respect target variable as proportion for class 0 is much higher (91.92%) than that of class 1 (8.07%). Special attention should also be given to model Sensitivity and Specificity.
+
+## Visualize the proportion of target variable
+```{r}
+
+# Calculate the proportion and convert it to percentages
+proportion <- prop.table(table(app_train$TARGET)) * 100
+
+# Create a data frame for plotting
+pie_data <- data.frame(category = names(proportion), proportion = proportion)
+
+# Create the pie chart using ggplot
+pie_chart <- ggplot(pie_data, aes(x = "", y = proportion, fill = category)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  labs(fill = "Category") +
+  geom_text(aes(label = paste0(round(proportion, 2), "%")), position = position_stack(vjust = 0.5)) +
+  labs(title = "Proportion of TARGET Categories")
+
+# Display the pie chart
+print(pie_chart)
+```
+
+
+## Determine accuracy for majority class classifier
+```{r}
+# Count of majority class
+majority_count <- max(table(app_train$TARGET))
+
+# Total number of clients in the target class
+total_count <- length(app_train$TARGET)
+
+# Accuracy for majority class
+accuracy <- majority_count / total_count
+
+accuracy
+```
+The accuracy for majority class classifier "0" (client with no payment difficulties) is 91.92% which is same as the proportion of class "0" clients in the data.
+
+# Correlation Analysis
+## Correlation of Target and Numeric Predictors
+```{r}
+#Getting list of Top5 positive and top 5 negative predictors
+
+# Separate numeric predictors
+numeric_vars <- app_train %>% 
+                select_if(is.numeric)
+
+# Calculate correlation between numeric predictors and target variable
+cor_target <- cor(numeric_vars, numeric_vars$TARGET, use = "pairwise.complete.obs", method = "pearson")
+as.data.frame(cor_target) %>% rename('Correlation Coefficient'=V1)
+
+# Create a data frame with predictor names and correlations
+df <- data.frame(Target = "TARGET", Variable = colnames(numeric_vars), Correlation = cor_target)
+
+# Sort the data frame by correlation in descending order
+sorted_df <- df[order(-abs(df$Correlation)), , drop = FALSE]
+
+# Extract the top 10 positive and top 10 negative correlations
+top_pos <- head(sorted_df[sorted_df$Correlation > 0, ], 10)
+top_neg <- head(sorted_df[sorted_df$Correlation < 0, ], 10)
+```
+
+
+
+```{r}
+##Visualizing correlation using heatmap for numerical predictors with target
+
+# Convert the correlation matrix to a data frame
+cor_matrix <- cor(numeric_vars, use = "pairwise.complete.obs")
+cor_df <- melt(cor_matrix)
+
+# Rename the columns
+colnames(cor_df) <- c("Variable1", "Variable2", "Correlation")
+
+# Sort the correlations by the absolute value
+cor_df <- cor_df[order(-abs(cor_df$Correlation)), ]
+
+# Filter the correlations involving the target variable
+cor_target <- subset(cor_df, Variable1 == "TARGET" | Variable2 == "TARGET")
+
+# Select the top positive and negative correlations
+top_pos <- head(subset(cor_target, Correlation > 0), 5)
+top_neg <- head(subset(cor_target, Correlation < 0), 5)
+
+# Combine the top positive and negative correlations
+top_cor <- rbind(top_pos, top_neg)
+
+# Filter the correlations involving the top positive and negative predictors
+top_predictors <- c(top_pos$Variable1, top_pos$Variable2, top_neg$Variable1, top_neg$Variable2)
+cor_top_predictors <- subset(cor_df, Variable1 %in% top_predictors & Variable2 %in% top_predictors)
+
+# Visualize the correlations using a heatmap
+ggplot(cor_top_predictors, aes(x = Variable1, y = Variable2, fill = Correlation)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  geom_text(aes(label = round(Correlation, 2)), color = "black") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Correlation Heatmap of Top Predictors")
+```
+DAYS_BIRTH, REGION_RATING_CLIENT_W_CITY, REGION_RATING_CLIENT are the top 3 numerical predictors with positive correlation wrt TARGET, whereas EXT_SOURCE_3, EXT_SOURCE_2, EXT_SOURCE_1 are top 3 numerical predictors with negative correlation wrt TARGET.
+
+## Correlation of Target and Categorical Predictors
+```{r}
+# Select character variables
+character_vars <- app_train %>% 
+                  select_if(is.character)
+
+# Create a data frame to store correlation values
+cor_df <- data.frame(variable = character(), correlation = numeric(), stringsAsFactors = FALSE)
+
+# Calculate correlation with the target variable
+for (var_name in colnames(character_vars)) {
+  var <- character_vars[[var_name]]
+  correlation <- cor(as.numeric(as.factor(var)), app_train$TARGET, use = "pairwise.complete.obs")
+  cor_df <- cor_df %>% add_row(variable = var_name, correlation = correlation)
+}
+```
+
+
+```{r}
+## Listing top categorical predictors
+
+# Sort the data frame by correlation in descending order
+sorted_df <- cor_df %>% arrange(desc(correlation))
+
+# Select the top 5 categorical predictors
+top_categorical_predictors <- head(sorted_df, 10)
+
+# Print the top 5 categorical predictors
+print(top_categorical_predictors)
+
+# Reorder the levels of the categorical predictor variable
+top_categorical_predictors$variable <- factor(top_categorical_predictors$variable,
+                                             levels = top_categorical_predictors$variable[order(top_categorical_predictors$correlation)])
+
+```
+
+
+```{r}
+##Visualizing categorical predictors with Target
+
+# Create a bar plot of the top categorical predictors
+ggplot(top_categorical_predictors, aes(x = variable, y = correlation, label = round(correlation, 2))) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(vjust = -0.5) +
+  labs(x = "Categorical Predictor", y = "Correlation") +
+  ggtitle("Top Categorical Predictors with Target Variable") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip() +
+  scale_fill_manual(values = c("steelblue" = "steelblue"), guide = "none")
+```
+NAME_EDUCATION_TYPE, CODE_GENDER, NAME_INCOME_TYPE are the top 3 categorical predictors which has positive correlation wrt TARGET.
+
+# Explore Bureau Data
+Join application_{train|test}.csv with transactional data in, for example, bureau.csv or previous_application.csv. This will require aggregating the transactional data to have the same grain as the application data.
+
+```{r}
+data <- read.csv('../data/application_train.csv')
+data2 <- read.csv('../data/bureau.csv')
+```
+
+```{r  results='hide'}
+head(data)
+summary(data)
+```
+
+```{r results='hide'}
+head(data2)
+summary(data2)
+```
+We can average together a select number of columns to condense the bureau table down to the client level from the credit level, which will help us join it to our application data (also at the client level).
+
+```{r}
+data2 <- group_by(data2,SK_ID_CURR) %>%
+  summarize(avg_days_credit = mean(DAYS_CREDIT),
+            avg_credit_day_overdue = mean(CREDIT_DAY_OVERDUE),
+            avg_days_credit_enddate = mean(DAYS_CREDIT_ENDDATE),
+            avg_amt_credit_max_overdue = mean(AMT_CREDIT_MAX_OVERDUE),
+            avg_cnt_credit_prolong = mean(CNT_CREDIT_PROLONG),
+            avg_amt_credit_sum = mean(AMT_CREDIT_SUM),
+            avg_amt_credit_sum_debt = mean(AMT_CREDIT_SUM_DEBT),
+            avg_amt_credit_sum_limit = mean(AMT_CREDIT_SUM_LIMIT),
+            avg_amt_credit_sum_overdue = mean(AMT_CREDIT_SUM_OVERDUE))
+head(data2)
+summary(data2)
+```
+
+Explore the joined transactional data.  Do some of the added columns show promise in predicting default?
+
+```{r}
+data2 %>%
+  select(everything()) %>%
+  summarise_all(funs(sum(is.na(.))))
+
+skm <- skim(data2)
+# Create DF showing Columns with missing data
+skm_missing <- select(skm, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
+skm_missing
+```
+
+Some of these columns definitely show promise. There are 9 additional dimensions and only 5 of them have missing values. Of those 5 missing values, only 2 are missing more than half of their values. Only 2-3 of the 9 additional dimensions are missing substantial data.
+
+## Explore Joined Data
+```{r results='hide'}
+data3 <- left_join(data, data2, by = 'SK_ID_CURR')
+head(data3)
+summary(data3)
+```
+
+Now that the data is joined, let's see how many records we could add additional dimensions to.
+
+```{r}
+data3 %>%
+  select(everything()) %>%
+  summarise_all(funs(sum(is.na(.))))
+
+skm2 <- skim(data3)
+# Create DF showing Columns with missing data
+skm_missing2 <- select(skm2, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
+skm_missing2
+```
+
+Avg_amt_credit_max_overdue only fills in about 9% of records and avg_amt_credit_sum_limit only matches about 28%. Those two variables may have to be thrown out, but all of the rest of them have matches of 50% or more. Many of the variables match a whopping 86% of records. This data is definitely usable and could be of value with the use of a model.
+
+# Missing Data
+```{r load data}
+data <- read.csv('../data/application_train.csv')
+```
+
+The dataset is highly dimensional and has 121 independent variables listed.  It is important to understand the degree of completeness of these variables in order to determine their usefulness in the model building phase of the project.
+```{r skimr analysis}
+skm <- skim(data)
+# Create DF showing Columns with missing data
+skm_missing <- select(skm, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
+skm_missing
+```
+Of the 121 independent variables, it turns out half (61 rows) have missing data.  Before determining what to do about each of these variables (removal, imputation, etc.) it is important to examine the columns and have a better understanding of what each of these columns may contribute in terms of useful information towards solving the eventual question of whether or not the customer is likely to default on the loan.
+
+## Character Columns
+```{r missing character}
+# Examine Character variables
+skm_char <- skm %>% filter(skim_type == 'character') %>% select(skim_variable,character.min,character.max,character.empty) %>% filter(character.empty > 0)
+skm_char
+```
+Six of the 16 character variables contain missing information.  Of those 6 columns, only 2 contain information that is informative towards the likelihood of customer default, NAME_TYPE_SUITE (NA = 1292) and OCCUPATION_TYPE (NA=96391).  In both of these cases it is impossible know whether the NA signifies the lack of a value (i.e. unhoused or unemployed) of if the information is just incomplete.  Therefore it is proposed to fill all NAs in both of this columns with a new value 'unknown'.  The other 4 columns will be dropped in light of the large number of missing values, and the small amount of variance in the values, in addition to the lack of relevance to the target variable outcome.
+
+## Numeric Housing Data
+Of the 61 variables that have missing data, 47 of these variables describe the housing of applicant in significant detail.  While an understanding of the housing situation is likely to be informative of the customer's default risk, the detail provided in these columns is probably not necessary, much of the important information is included in NAME_HOUSING_TYPE and FLAG_OWN_REALTY which are both complete.  It may be informative to disaggregate those that live in a house as opposed to an apartment, and we can look further into this possibility. However, inclusion of these 47 variables in the final model is probably unnecessary and so missing values in these columns can be ignored. 
+
+```{r non-housing missing variables}
+housing_stats_cols <- c('APARTMENTS_AVG','BASEMENTAREA_AVG','YEARS_BEGINEXPLUATATION_AVG','YEARS_BUILD_AVG','COMMONAREA_AVG',
+                        'ELEVATORS_AVG','ENTRANCES_AVG','FLOORSMAX_AVG','FLOORSMIN_AVG','LANDAREA_AVG','LIVINGAPARTMENTS_AVG',
+                        'LIVINGAREA_AVG','NONLIVINGAPARTMENTS_AVG','NONLIVINGAREA_AVG','APARTMENTS_MODE','BASEMENTAREA_MODE',
+                        'YEARS_BEGINEXPLUATATION_MODE','YEARS_BUILD_MODE','COMMONAREA_MODE','ELEVATORS_MODE','ENTRANCES_MODE',
+                        'FLOORSMAX_MODE','FLOORSMIN_MODE','LANDAREA_MODE','LIVINGAPARTMENTS_MODE','LIVINGAREA_MODE',
+                        'NONLIVINGAPARTMENTS_MODE','NONLIVINGAREA_MODE','APARTMENTS_MEDI','BASEMENTAREA_MEDI',
+                        'YEARS_BEGINEXPLUATATION_MEDI','YEARS_BUILD_MEDI','COMMONAREA_MEDI','ELEVATORS_MEDI','ENTRANCES_MEDI',
+                        'FLOORSMAX_MEDI','FLOORSMIN_MEDI','LANDAREA_MEDI','LIVINGAPARTMENTS_MEDI','LIVINGAREA_MEDI',
+                        'NONLIVINGAPARTMENTS_MEDI','NONLIVINGAREA_MEDI','FONDKAPREMONT_MODE','HOUSETYPE_MODE','TOTALAREA_MODE',
+                        'WALLSMATERIAL_MODE','EMERGENCYSTATE_MODE')
+# Remove housing data columms
+skm_missing %>% filter(!skim_variable %in% housing_stats_cols)
+```
+## Social Circle Data
+Looking at the remaining columns with missing data 4 of them contain information about the applicant's social circle and the 30-day and 60-day days past due default status, there is minimal missing data (n=1021)
+
+```{r social circle data}
+# Dataframe with social variables
+social_data_df <- data %>% select(OBS_30_CNT_SOCIAL_CIRCLE,DEF_30_CNT_SOCIAL_CIRCLE,OBS_60_CNT_SOCIAL_CIRCLE,
+                                  DEF_60_CNT_SOCIAL_CIRCLE)
+summary(social_data_df)
+
+# Create Plots
+plot_OBS_30 <- ggplot(social_data_df, aes(OBS_30_CNT_SOCIAL_CIRCLE)) +
+  geom_histogram()
+plot_DEF_30 <- ggplot(social_data_df, aes(DEF_30_CNT_SOCIAL_CIRCLE)) +
+  geom_histogram()
+plot_OBS_60 <- ggplot(social_data_df, aes(OBS_60_CNT_SOCIAL_CIRCLE)) +
+  geom_histogram()
+plot_DEF_60 <- ggplot(social_data_df, aes(DEF_60_CNT_SOCIAL_CIRCLE)) +
+  geom_histogram()
+
+grid.arrange(plot_OBS_30,plot_DEF_30,plot_OBS_60,plot_DEF_60, ncol=2, top=textGrob('Social Circle Variable Distribution'))
+```
+
+Given that there are relatively few rows with missing data and the data is heavily right-skewed, it is proposed that missing data in these columns be replaced with imputed zero values (*median*= 0),
+
+## External Source Data
+Included in the dataset are 3 externally sourced scores which have been normalized.  There is wide variation in the number of values missing in each of these sources ($NA_1=173378$,$NA_2=660$,$NA_3=60965$).  
+```{r External Source Data}
+summary(data %>% select(EXT_SOURCE_1,EXT_SOURCE_2,EXT_SOURCE_3))
+# Select rows with no External Source Data
+n_empty_ext <- nrow(data %>% filter(is.na(EXT_SOURCE_1) & is.na(EXT_SOURCE_2) & is.na(EXT_SOURCE_3)))
+```
+Removing rows with missing data would shrink the dataset considerably.  Imputation with the mean value for each column is a possibility.  Another option is to create a new variable combining the scores into an AVG_EXT_SCORE since they are all normalized values.  The benefit to this approach is that only `r n_empty_ext` rows have no value for any of the 3 columns and so very little data would need to be imputed or removed.  This approach takes advantage of available information, while reducing missing data.  However it is possible that some information loss will occur with this approach if one of these sources turns out to be much more informative than one or both of the others.
+
+## Credit Bureau Data
+The final large group of related data deals with credit inquiries from the credit bureau over the previous year.  These are divided into the hour, day, week, month, quarter, and year (each time period is exclusive of the time period before it) prior to the application being submitted.  This data is strongly right-skewed and is 86.5% complete (NAs = 41519).
+
+```{r Credit Bureau Data}
+summary(data %>% select(AMT_REQ_CREDIT_BUREAU_HOUR,AMT_REQ_CREDIT_BUREAU_DAY,AMT_REQ_CREDIT_BUREAU_WEEK,AMT_REQ_CREDIT_BUREAU_MON,
+                        AMT_REQ_CREDIT_BUREAU_QRT,AMT_REQ_CREDIT_BUREAU_YEAR))
+
+
+```
+While we could remove the 41519 rows missing data, the loss of other information in those records might be valuable, and so it is proposed to impute the missing values with the median value for each column, in most cases this is 0.
+
+## Other Data
+There are a few remaining columns that contain missing data OWN_CAR_AGE, AMT_GOODS_PRICE, AMT_ANNUITY, CNT_FAM_MEMBERS,and DAYS_LAST_PHONE_CHANGE. Of these columns only OWN_CAR_AGE has a significant number of missing values.  There is another column which is related to car ownership, FLAG_OWN_CAR, which is a boolean field.  Upon closer inspection it is evident that all of those records where FLAG_OWN_CAR = 'N' contain NAs, conversely only 5 records with a FLAG_OWN_CAR = 'Y' contain missing values.
+```{r Car Ownership Data}
+
+CrossTable(data$FLAG_OWN_CAR, is.na(data$OWN_CAR_AGE), prop.r = F, prop.c = F, prop.chisq = F, dnn = c('Owns Car','Contains Missing Values'))
+```
+Therefore, it is proposed to remove these 5 records, and to convert the OWN_CAR_AGE into a factor variable with levels: No Car Owned, 0-3 years, 4-6 years, etc.
+
+The other columns contain so few observations that it is proposed that those rows with missing values be excluded.
+
+# Problems with the data
+## Outlier Detection
+
+```{r}
+skm_num <- skm %>% filter(skim_type == 'numeric') %>% filter(!skim_variable %in% housing_stats_cols) %>% select(skim_variable, numeric.p0, numeric.mean, numeric.p100, numeric.hist)
+skm_num
+```
+Some modelling techniques are susceptible to outsized influence by outliers (regression for example).  After examining the distribution of the numeric data a few columns stand out as containing likely outliers.  The first examples are CNT_FAM_MEMBERS and CNT_CHILDREN.  
+```{r family counts}
+# Create dataframe with columns of concern for plotting
+num_problem_df <- data %>% select(CNT_CHILDREN, CNT_FAM_MEMBERS, AMT_INCOME_TOTAL, OWN_CAR_AGE, DAYS_LAST_PHONE_CHANGE, DAYS_EMPLOYED) %>% filter(!is.na(CNT_FAM_MEMBERS))
+
+# Create Plots for family columns
+plt_fam <- ggplot(num_problem_df, aes(CNT_FAM_MEMBERS)) +
+  geom_boxplot()
+plt_chld <- ggplot(num_problem_df, aes(CNT_CHILDREN)) +
+  geom_boxplot()
+
+grid.arrange(plt_fam, plt_chld, ncol=2, top=textGrob('Family Count Variables Distribution'))
+
+```
+  
+Both of these columns (which are related) contain a small number of outlier records, however the information is consistent and is likely to have an influence on the target variable.  As such, it is recommended that this variable is normalized before it is used in any modelling techniques that are suceptible to the presence of outliers.
+
+# Basic inspection of application train data
+```{r echo=FALSE}
+app_train <- read_csv("../data/application_train.csv") %>%
+  rename_with(~tolower(.))
+
+```
+
+## Scope of missing values
+
+### Rowwise completeness 
+
+```{r}
+app_train %>%
+  mutate(n_missing = rowSums(is.na(.)),
+         p_missing = n_missing/ncol(.)) %>%
+  ggplot() +
+  geom_histogram(aes(p_missing),
+                 binwidth = 0.05, fill = "darkred", color = "white") +
+  stat_bin(aes(p_missing, y = after_stat(count), label = ifelse(after_stat(count) == 0, "", after_stat(count))),
+           geom = "text", binwidth = 0.05, size = 6, fontface = "bold", vjust = 0) +
+  scale_x_continuous(breaks = seq(0,1,0.1), minor_breaks = NULL) +
+  scale_y_continuous(labels = ~paste0(.%/%1000, "k")) +
+  labs(title = "Distribution of missing values by row",
+       x = "percent missing") +
+  theme_minimal()
+```
+
+### Columns with most NA's
+
+```{r}
+app_train %>%
+  summarise(across(everything(), ~sum(is.na(.)))) %>%
+  pivot_longer(everything(),
+               names_to = "col",
+               values_to = "n_missing") %>%
+  mutate(p_missing = percent(n_missing / nrow(app_train), 0.1)) %>%
+  arrange(-n_missing) %>%
+  head(20)
+```
+
+## Inspecting numerical variables
+
+### Class conversion
+
+There are many categorical variables in this table which are encoded numerically. With 122 total columns, it's rather arduous to distinguish true numerical variables but selecting columns that only contain numbers (and NA's) is an obvious start.
+
+```{r}
+# Ensuring data types were properly attributed during import
+app_train %>%
+  summarise(across(everything(), 
+                   list(assigned = class,
+                        observed = \(xx){
+                          case_when(grepl("^(\\d|\\.|-)+$", xx) | is.na(xx) ~ "numeric", 
+                                    .default = "character")
+                        },
+                        vsample = ~as.character(.))) %>%
+            first) %>%
+  pivot_longer(everything(),
+               names_to = c("column", ".value"),
+               names_pattern = "(.*)_(.*)") %>%
+  filter(assigned != observed) # subset mismatches
+
+
+
+```
+
+Since no columns where misclassed during the importing process, we can move on to subsetting the numerical columns.
+
+```{r}
+app_train %>%
+  select(where(is.numeric))
+```
+
+106/122 (87%) of columns in the train set are classified as numeric so this subsetting didn't do much for us. It's unlikely that categorical variables would be encoded with decimals/doubles or negative numbers, so we can remove these for now while we look through the rest of the variables' description in the column description file.
+
+```{r}
+app_train %>%
+  select(where(is.numeric)) %>%
+  mutate(across(everything(), as.character)) %>%
+  select(where(~ all(!grepl("\\.|-", .)))) %>%
+  colnames() %>%
+  tibble(column = .)
+```
+
+This brings us down to a much more manageable 50 columns. Further determination can be aided by the column description file. Once all categorical variables have been identified, they can be converted to factors. The new factors can easily be reconverted later if need be.
+
+```{r}
+num2fac <- app_train %>%
+  select(where(is.numeric)) %>%
+  mutate(across(everything(), as.character)) %>%
+  select(where(~ all(!grepl("\\.|-", .)))) %>%
+  select(-c(own_car_age, hour_appr_process_start, matches("^(obs|def|amt|cnt)"))) %>%
+  colnames() 
+
+app_train1 <- app_train %>%
+  mutate(across(c(where(is.character), all_of(num2fac)), factor)) 
+
+```
+
+### Distribution and other characteristics
+
+```{r}
+app_train1 %>%
+  select(where(is.numeric)) %>%
+  summarise(across(everything(), 
+                   list(avg = ~mean(., na.rm = TRUE),
+                        med = ~median(., na.rm = TRUE),
+                        max = ~max(., na.rm = TRUE),
+                        min = ~min(., na.rm = TRUE),
+                        sd = ~sd(., na.rm = TRUE),
+                        var = ~var(., na.rm = TRUE),
+                        outupper = ~soutlier(.),
+                        outlower = ~soutlier(., lower = TRUE))) %>%
+              round(2)) %>%
+  pivot_longer(everything(),
+               names_to = c("column", ".value"),
+               names_pattern = "(.*)_(.*)")
+
+```
+
+
+# Addressing problematic columns
+
+Some missing values in `code_gender` and `organization_type` were encoded with the string `XNA` instead of being explicitly missing. 
+
+```{r}
+unique(app_train1$code_gender)
+unique(app_train1$organization_type)
+```
+
+This can be fixed with the following:
+
+```{r}
+app_train1 %>%
+  select(code_gender, organization_type) %>%
+  mutate(across(c(code_gender, organization_type), 
+                ~case_when(. != "XNA" ~ .))) %>% # Fix occurs here
+  sapply(., unique) %>% # Displaying the results 
+  tibble(cols = names(.),
+         val = .) %>%
+  unnest(val) %>%
+  arrange()
+  
+```
+`days_employed` contains some erroneous values. Most values of `days_employed` are negative and yield reasonable values when converted to positive years with $\left( x \div 365 \right) \times -1$ but those beginning > 0 equate to less than -1,000 years. What's more is that all of the values greater than 0 equal 365243. It's possible that this number may be used as a factor to calculate time or define a time interval. 365 (days) 24 (hours) 3 (?) is rather coincidental.
+
+```{r}
+# Maximum is extremely large and mean is greater than 3rd quartile
+app_train1$days_employed %>%
+  summary
+
+# All values > 0 equal 365243
+app_train1 %>%
+  filter(days_employed > 0) %>%
+  select(days_employed) %>%
+  summary
+
+# days_employed converted to years
+app_train1 %>%
+  select(days_employed) %>%
+  mutate(year_conv = round((days_employed / 365) * -1, 2)) %>%
+  head(10)
+
+```
+
+This can be solved with the following:
+
+```{r}
+app_train1 %>%
+  mutate(days_employed = case_when(days_employed <= 0 ~ days_employed))
+```
+
+Time to repair all 3 variables, and update the data frame.
+
+```{r}
+app_train2 <- app_train1 %>%
+  mutate(across(c(code_gender, organization_type), 
+                ~case_when(. != "XNA" ~ .)),
+         days_employed = case_when(days_employed <= 0 ~ days_employed))
+  
+```
+
+## Erroneous Data
+
+In the case of AMT_INCOME_TOTAL there is a single outlier that lies so far out of the scale (AMT_INCOME_TOTAL = 117,000,000) and is inconsistent with other data, and so is probably erroneous.  Even if not erroneous, the value added by this datapoint to any model is negligible as the core customer group is not multi-millionaires.
+
+```{r income amount}
+plt_inc <- ggplot(num_problem_df, aes(AMT_INCOME_TOTAL)) +
+  geom_boxplot() +
+  ggtitle('Total Income Distribution')
+
+# data %>% filter(AMT_INCOME_TOTAL > 100000000)
+plt_inc2 <- ggplot(data %>% filter(AMT_INCOME_TOTAL < 100000000), aes(AMT_INCOME_TOTAL)) +
+  geom_boxplot() +
+  ggtitle('Total Income Distribution (After Removal)')
+
+grid.arrange(plt_inc,plt_inc2, ncol=2, top=textGrob('Total Income Variable Distribution'))
+```
+Even after removal, outliers remain and measures (see above) will have to be taken to ensure they do not overly influence predictive models.  In the case of such strongly skewed data, it might be advisable to convert the continuous variable into a categorical one and break the data into bins for use in models.
+
+```{r car age}
+ggplot(num_problem_df, aes(OWN_CAR_AGE)) +
+  geom_histogram(bins = 60) +
+  ggtitle('Age of Cars Owned Distribution')
+
+data %>% filter(OWN_CAR_AGE > 55) %>% select(SK_ID_CURR, OWN_CAR_AGE) %>% group_by('Cars older than 55 years' = as.factor(OWN_CAR_AGE))%>%count()
+```
+There is an odd anomaly in the data such that a large number of owned cars are recorded as being 64-65 years old.  It seems unlikely that this data correctly represents reality.  The amount of erroneous data is small and so removal wouldn't impact the overall dataset to a large degree.  However, the other data contained in these records may be informative, and so it is proposed that if the variable OWN_CAR_AGE is to be used in a model, that these rows be removed.
+
+```{r phone}
+ggplot(num_problem_df, aes(DAYS_LAST_PHONE_CHANGE)) +
+  geom_histogram() +
+  ggtitle('Days Since Previous Phone Change')
+
+```
+
+```{r days employed}
+
+data %>% filter(DAYS_EMPLOYED > 0) %>% select(SK_ID_CURR, DAYS_EMPLOYED) %>% group_by('Days Employed' = as.factor(DAYS_EMPLOYED))%>%count()
+
+ggplot(num_problem_df %>% filter(DAYS_EMPLOYED < 0), aes(DAYS_EMPLOYED)) +
+  geom_histogram() +
+  ggtitle('Days Employed')
+
+de_df <- data %>% filter(DAYS_EMPLOYED < 0) 
+
+```
+
+Finally, DAYS_EMPLOYED as discussed above, has significant data integrity issues.  The way the data is set up only values less than or equal to 0 should be permissible.  However, a significant number of rows (n = 55374) all have the same positive value, DAYS_EMPLOYED = 365243.  Not only should the value be negative, but the scale is also outside of realistic values (365243 days = 1000+ years).  Due to these rows comprising a significant portion of the data set (`r round(55374/nrow(data)*100,1)`%) removal would be detrimental to model accuracy, so it is proposed that the data be imputed for these rows, being replaced by the column median (median = `r median(de_df$DAYS_EMPLOYED)`)
+
+# Results
+
+# Contributions
+* Roman Brock
+    + Section 1
+    + Section 5
+    + Formatting
+    + Troubleshooting
+* Che Diaz Fadel
+    + Section 1
+    + Section 8
+    + Section 9
+    + Formatting
+    + Troubleshooting
+* Kalyani Joshi
+    + Section 1
+    + Section 2
+    + Section 3
+    + Section 10
+    + Requirements
+* Chris Porter
+    + Section 1
+    + Section 6
+    + Section 7
+    + Section 9
+    + Formatting
+
