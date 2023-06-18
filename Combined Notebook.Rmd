@@ -368,6 +368,7 @@ Of the 121 independent variables, it turns out half (61 rows) have missing data.
 
 ## Character Columns
 ```{r missing character}
+# Examine Character variables
 skm_char <- skm %>% filter(skim_type == 'character') %>% select(skim_variable,character.min,character.max,character.empty) %>% filter(character.empty > 0)
 skm_char
 ```
@@ -394,10 +395,12 @@ skm_missing %>% filter(!skim_variable %in% housing_stats_cols)
 Looking at the remaining columns with missing data 4 of them contain information about the applicant's social circle and the 30-day and 60-day days past due default status, there is minimal missing data (n=1021)
 
 ```{r social circle data}
+# Dataframe with social variables
 social_data_df <- data %>% select(OBS_30_CNT_SOCIAL_CIRCLE,DEF_30_CNT_SOCIAL_CIRCLE,OBS_60_CNT_SOCIAL_CIRCLE,
                                   DEF_60_CNT_SOCIAL_CIRCLE)
 summary(social_data_df)
 
+# Create Plots
 plot_OBS_30 <- ggplot(social_data_df, aes(OBS_30_CNT_SOCIAL_CIRCLE)) +
   geom_histogram()
 plot_DEF_30 <- ggplot(social_data_df, aes(DEF_30_CNT_SOCIAL_CIRCLE)) +
