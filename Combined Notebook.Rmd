@@ -40,12 +40,13 @@ soutlier <- function(x, lower = FALSE){
 }
 ```
 
-#Introduction
+# Introduction  
 Unbanked individuals represent both an underserved demographic as well as a typically
 untapped market by reputable creditors. Home Credit seeks to fill this gap in service. There are
 unique challenges that accompany establishing creditworthiness among a population that by
 definition has little to no financial history, verifiable assets, or traditional means to qualify for a
 loan.
+
 ## Project Scope
 This project will utilize machine learning algorithms to develop a classification model which will
 use available data about Home Credit customers to improve prediction of those that are likely to
@@ -57,7 +58,9 @@ simple prediction based upon majority class statistics and will allow Home Credi
 customers with confidence that repayment will in return grow available assets to the company in
 order to further its mission of providing credit to the underserved.
 
-# Load Libraries
+Below, we explore the dataset and provide some preliminary analysis to determine if the dataset is adequate to move forward with data modelling.
+
+## Load Libraries
 ```{r libraries}
 library(tidyverse)
 library(skimr)
@@ -71,7 +74,7 @@ library(grid)
 library(gmodels)
 ```
 
-# Reading train file
+## Reading train file
 ```{r}
 #Read application_train.csv file
 app_train <- read.csv("../data/application_train.csv")
@@ -173,7 +176,7 @@ numeric_vars <- app_train %>%
 
 # Calculate correlation between numeric predictors and target variable
 cor_target <- cor(numeric_vars, numeric_vars$TARGET, use = "pairwise.complete.obs", method = "pearson")
-cor_target
+as.data.frame(cor_target) %>% rename('Correlation Coefficient'=V1)
 
 # Create a data frame with predictor names and correlations
 df <- data.frame(Target = "TARGET", Variable = colnames(numeric_vars), Correlation = cor_target)
@@ -463,60 +466,13 @@ grid.arrange(plt_fam, plt_chld, ncol=2, top=textGrob('Family Count Variables Dis
   
 Both of these columns (which are related) contain a small number of outlier records, however the information is consistent and is likely to have an influence on the target variable.  As such, it is recommended that this variable is normalized before it is used in any modelling techniques that are suceptible to the presence of outliers.
 
-## Erroneous Data
-
-In the case of AMT_INCOME_TOTAL there is a single outlier that lies so far out of the scale (AMT_INCOME_TOTAL = 117,000,000) and is inconsistent with other data, and so is probably erroneous.  Even if not erroneous, the value added by this datapoint to any model is negligible as the core customer group is not multi-millionaires.
-
-```{r income amount}
-plt_inc <- ggplot(num_problem_df, aes(AMT_INCOME_TOTAL)) +
-  geom_boxplot() +
-  ggtitle('Total Income Distribution')
-
-# data %>% filter(AMT_INCOME_TOTAL > 100000000)
-plt_inc2 <- ggplot(data %>% filter(AMT_INCOME_TOTAL < 100000000), aes(AMT_INCOME_TOTAL)) +
-  geom_boxplot() +
-  ggtitle('Total Income Distribution (After Removal)')
-
-grid.arrange(plt_inc,plt_inc2, ncol=2, top=textGrob('Total Income Variable Distribution'))
-```
-Even after removal, outliers remain and measures (see above) will have to be taken to ensure they do not overly influence predictive models.  In the case of such strongly skewed data, it might be advisable to convert the continuous variable into a categorical one and break the data into bins for use in models.
-
-```{r car age}
-ggplot(num_problem_df, aes(OWN_CAR_AGE)) +
-  geom_histogram(bins = 60) +
-  ggtitle('Age of Cars Owned Distribution')
-
-data %>% filter(OWN_CAR_AGE > 55) %>% select(SK_ID_CURR, OWN_CAR_AGE) %>% group_by('Cars older than 55 years' = as.factor(OWN_CAR_AGE))%>%count()
-```
-There is an odd anomaly in the data such that a large number of owned cars are recorded as being 64-65 years old.  It seems unlikely that this data correctly represents reality.  The amount of erroneous data is small and so removal wouldn't impact the overall dataset to a large degree.  However, the other data contained in these records may be informative, and so it is proposed that if the variable OWN_CAR_AGE is to be used in a model, that these rows be removed.
-
-```{r phone}
-ggplot(num_problem_df, aes(DAYS_LAST_PHONE_CHANGE)) +
-  geom_histogram() +
-  ggtitle('Days Since Previous Phone Change')
-
-```
-
-```{r days employed}
-
-data %>% filter(DAYS_EMPLOYED > 0) %>% select(SK_ID_CURR, DAYS_EMPLOYED) %>% group_by('Days Employed' = as.factor(DAYS_EMPLOYED))%>%count()
-
-ggplot(num_problem_df %>% filter(DAYS_EMPLOYED < 0), aes(DAYS_EMPLOYED)) +
-  geom_histogram() +
-  ggtitle('Days Employed')
-
-de_df <- data %>% filter(DAYS_EMPLOYED < 0) 
-
-```
-
-Finally, DAYS_EMPLOYED has significant data integrity issues.  The way the data is set up only values less than or equal to 0 should be permissible.  However, a significant number of rows (n = 55374) all have the same positive value, DAYS_EMPLOYED = 365243.  Not only should the value be negative, but the scale is also outside of realistic values (365243 days = 1000+ years).  Due to these rows comprising a significant portion of the data set (`r round(55374/nrow(data)*100,1)`%) removal would be detrimental to model accuracy, so it is proposed that the data be imputed for these rows, being replaced by the column median (median = `r median(de_df$DAYS_EMPLOYED)`)
-
 # Basic inspection of application train data
-```{r}
+```{r echo=FALSE}
 app_train <- read_csv("../data/application_train.csv") %>%
   rename_with(~tolower(.))
 
 ```
+
 ## Scope of missing values
 
 ### Rowwise completeness 
@@ -537,7 +493,6 @@ app_train %>%
   theme_minimal()
 ```
 
-
 ### Columns with most NA's
 
 ```{r}
@@ -550,7 +505,6 @@ app_train %>%
   arrange(-n_missing) %>%
   head(20)
 ```
-
 
 ## Inspecting numerical variables
 
@@ -693,3 +647,79 @@ app_train2 <- app_train1 %>%
          days_employed = case_when(days_employed <= 0 ~ days_employed))
   
 ```
+
+## Erroneous Data
+
+In the case of AMT_INCOME_TOTAL there is a single outlier that lies so far out of the scale (AMT_INCOME_TOTAL = 117,000,000) and is inconsistent with other data, and so is probably erroneous.  Even if not erroneous, the value added by this datapoint to any model is negligible as the core customer group is not multi-millionaires.
+
+```{r income amount}
+plt_inc <- ggplot(num_problem_df, aes(AMT_INCOME_TOTAL)) +
+  geom_boxplot() +
+  ggtitle('Total Income Distribution')
+
+# data %>% filter(AMT_INCOME_TOTAL > 100000000)
+plt_inc2 <- ggplot(data %>% filter(AMT_INCOME_TOTAL < 100000000), aes(AMT_INCOME_TOTAL)) +
+  geom_boxplot() +
+  ggtitle('Total Income Distribution (After Removal)')
+
+grid.arrange(plt_inc,plt_inc2, ncol=2, top=textGrob('Total Income Variable Distribution'))
+```
+Even after removal, outliers remain and measures (see above) will have to be taken to ensure they do not overly influence predictive models.  In the case of such strongly skewed data, it might be advisable to convert the continuous variable into a categorical one and break the data into bins for use in models.
+
+```{r car age}
+ggplot(num_problem_df, aes(OWN_CAR_AGE)) +
+  geom_histogram(bins = 60) +
+  ggtitle('Age of Cars Owned Distribution')
+
+data %>% filter(OWN_CAR_AGE > 55) %>% select(SK_ID_CURR, OWN_CAR_AGE) %>% group_by('Cars older than 55 years' = as.factor(OWN_CAR_AGE))%>%count()
+```
+There is an odd anomaly in the data such that a large number of owned cars are recorded as being 64-65 years old.  It seems unlikely that this data correctly represents reality.  The amount of erroneous data is small and so removal wouldn't impact the overall dataset to a large degree.  However, the other data contained in these records may be informative, and so it is proposed that if the variable OWN_CAR_AGE is to be used in a model, that these rows be removed.
+
+```{r phone}
+ggplot(num_problem_df, aes(DAYS_LAST_PHONE_CHANGE)) +
+  geom_histogram() +
+  ggtitle('Days Since Previous Phone Change')
+
+```
+
+```{r days employed}
+
+data %>% filter(DAYS_EMPLOYED > 0) %>% select(SK_ID_CURR, DAYS_EMPLOYED) %>% group_by('Days Employed' = as.factor(DAYS_EMPLOYED))%>%count()
+
+ggplot(num_problem_df %>% filter(DAYS_EMPLOYED < 0), aes(DAYS_EMPLOYED)) +
+  geom_histogram() +
+  ggtitle('Days Employed')
+
+de_df <- data %>% filter(DAYS_EMPLOYED < 0) 
+
+```
+
+Finally, DAYS_EMPLOYED as discussed above, has significant data integrity issues.  The way the data is set up only values less than or equal to 0 should be permissible.  However, a significant number of rows (n = 55374) all have the same positive value, DAYS_EMPLOYED = 365243.  Not only should the value be negative, but the scale is also outside of realistic values (365243 days = 1000+ years).  Due to these rows comprising a significant portion of the data set (`r round(55374/nrow(data)*100,1)`%) removal would be detrimental to model accuracy, so it is proposed that the data be imputed for these rows, being replaced by the column median (median = `r median(de_df$DAYS_EMPLOYED)`)
+
+# Results
+
+# Contributions
+* Roman Brock
+    + Section 1
+    + Section 5
+    + Formatting
+    + Troubleshooting
+* Che Diaz Fadel
+    + Section 1
+    + Section 8
+    + Section 9
+    + Formatting
+    + Troubleshooting
+* Kalyani Joshi
+    + Section 1
+    + Section 2
+    + Section 3
+    + Section 10
+    + Requirements
+* Chris Porter
+    + Section 1
+    + Section 6
+    + Section 7
+    + Section 9
+    + Formatting
+
