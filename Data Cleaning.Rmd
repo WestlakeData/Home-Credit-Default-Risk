@@ -9,7 +9,15 @@ library (tidyverse)
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
+```{r load data}
+df <- read.csv("../data/application_train.csv")
+col_names <- read.csv('desired_columns.csv')
+```
+
 ```{r column selection}
+
+#Remove Housing Statistics
+df <- df %>% select(col_names$ColumnName)
 
 ```
 
