@@ -90,3 +90,5 @@ bureau_agg_b <- bureau_df %>%
 bureau_agg_b$SK_ID_CURR <- as.factor(bureau_agg_b$SK_ID_CURR)
 #Join app_train1 and bureau_agg_b
 app_train2 <- app_train1 %>% inner_join(bureau_agg_b)
+# Cleanup
+remove(app_train,bureau_agg_a,bureau_agg_b,bureau_df,desired_columns,num2fac)
