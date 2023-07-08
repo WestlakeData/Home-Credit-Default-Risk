@@ -1,0 +1,317 @@
+---
+title: "Home Credit Default Risk"
+subtitle: "Modelling"
+author: "Roman Brock, Che Diaz Fadel, Kalyani Joshi, and Chris Porter"
+output: 
+  html_document:
+    number_sections: yes
+    toc: yes
+    fig_width: 15
+    fig_height: 10
+    highlight: tango
+    df_print: paged
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+# Set options ----
+options(tibble.print_max = 40,
+        tibble.print_min = 24,
+        width = 222,
+        pillar.min_title_chars = 15)
+
+```
+
+# Introduction  
+Unbanked individuals represent both an underserved demographic as well as a typically
+untapped market by reputable creditors. Home Credit seeks to fill this gap in service. There are
+unique challenges that accompany establishing creditworthiness among a population that by
+definition has little to no financial history, verifiable assets, or traditional means to qualify for a
+loan.
+
+## Project Scope
+This project will utilize machine learning algorithms to develop a classification model which will
+use available data about Home Credit customers to improve prediction of those that are likely to
+repay loans granted by Home Credit. The team will test a number of possible classification
+models in order to develop the most accurate model on data outside the training data. An
+added benefit of this project is the potential to identify possible additional data that might further
+inform the classification model. A successful model will provide greater predictive power than a
+simple prediction based upon majority class statistics and will allow Home Credit to loan to
+customers with confidence that repayment will in return grow available assets to the company in
+order to further its mission of providing credit to the underserved.
+
+The dataset was previously explored and was determined to be suitable for data modelling purposes.  In this notebook we document the various modeling strategies explored as well as any included data preparation undertaken prior to modeling.  We then compare the various models performance and report our results.
+
+## Load Libraries
+```{r libraries}
+# xgBoost dependencies
+library(tidyverse)
+library(gmodels)
+library(caret)
+library(mlr)
+library(xgboost)
+library(parallel)
+library(parallelMap)
+library(ggplot2)
+library(pROC)
+```
+
+# Data Preparation
+## Standardized Data Set Preparation
+In accordance with the information detailed in our previous EDA notebook, we created a standardized data set that utilized the same variables for all models.
+```{r standardized data sets, echo=TRUE, eval=FALSE}
+# Load data ----
+app_train <- read_csv("../data/application_train.csv")
+
+bureau_df <- read_csv("../data/bureau.csv")
+
+desired_columns <- read_csv("desired_columns.csv")
+
+# Identify numerically encoded categorical variables ----
+num2fac <- app_train %>%
+  select(where(is.numeric)) %>%
+  mutate(across(everything(), as.character)) %>%
+  select(where(~ all(!grepl("\\.|-", .)))) %>%
+  #select(-c(own_car_age, hour_appr_process_start, matches("^(obs|def|amt|cnt)"))) %>%
+  select(-c(OWN_CAR_AGE, HOUR_APPR_PROCESS_START, matches("^(OBS|DEF|AMY|CNT)"))) %>%
+  colnames() 
+
+# Create data frame ----
+app_train1 <- app_train %>%
+  # Select columns from 'desired_columns.csv'
+  select(desired_columns$ColumnName) %>% 
+  # Handling numerically encoded categorical variables
+  mutate(across(c(where(is.character), all_of(num2fac)), factor), 
+         # Fixing invalid NA's
+         across(c(CODE_GENDER, ORGANIZATION_TYPE), 
+                ~case_when(. != "XNA" ~ .)),
+         # Replacing NA's in social circle columns with 0
+         across(contains("SOCIAL_CIRCLE"), ~replace_na(., 0)),
+         # Replacing NA's with 0
+         across(c(AMT_REQ_CREDIT_BUREAU_HOUR, AMT_REQ_CREDIT_BUREAU_DAY,
+                  AMT_REQ_CREDIT_BUREAU_WEEK, AMT_REQ_CREDIT_BUREAU_MON,
+                  AMT_REQ_CREDIT_BUREAU_QRT, AMT_REQ_CREDIT_BUREAU_YEAR),
+                ~replace_na(., factor("0"))),
+         # Fixing unusual `DAYS_EMPLOYED` values
+         DAYS_EMPLOYED = case_when(DAYS_EMPLOYED <= 0 ~ DAYS_EMPLOYED),
+         # Creating ordinal version of `OWN_CAR_AGE`
+         OWN_CAR_AGE2 = cut(OWN_CAR_AGE,
+                            c(0, 5, 10, 15, Inf),
+                            right = FALSE),
+         OWN_CAR_AGE2 = case_when(FLAG_OWN_CAR == "N" ~ factor("No Car Owned"),
+                                  .default = OWN_CAR_AGE2)) %>%
+  # Creating aggregate variable from the `EXT_SOURCE_*` variables
+  rowwise() %>%
+  mutate(AVG_EXT_SCORE = mean(c_across(contains("EXT_"))),
+         .after = EXT_SOURCE_3) %>%
+  ungroup() %>%
+  # Removing rows with NA's in below columns
+  filter(if_all(c(FLAG_OWN_CAR, AMT_GOODS_PRICE, AMT_ANNUITY, 
+                  CNT_FAM_MEMBERS, DAYS_LAST_PHONE_CHANGE),
+                ~!is.na(.)))
+
+# Aggregate bureau data ----
+# __ Wide version data frame
+bureau_agg_a <- bureau_df %>%
+  # Seemed to be the most relevant credit types
+  filter(CREDIT_TYPE %in% c("Consumer credit","Credit card","Car loan","Mortgage",
+                            "Microloan","Loan for business development","Another type of loan"),
+         # Ensure credit was actually given
+         AMT_CREDIT_SUM > 0,
+         # Thought this made most sense
+         CREDIT_ACTIVE %in% c("Active", "Closed"),
+         # It's unclear if they convert nominal curreny values so kept only most common
+         CREDIT_CURRENCY == "currency 1") %>%
+  # Clean credit type values to use as column names
+  mutate(CREDIT_TYPE = gsub(" +", "_", tolower(CREDIT_TYPE))) %>%
+  group_by(SK_ID_CURR, CREDIT_TYPE) %>%
+  summarise(avg_credit = mean(AMT_CREDIT_SUM),
+            # Decided that average of ratios made more sense than ratio of averages
+            avg_overage = mean(AMT_CREDIT_MAX_OVERDUE/AMT_CREDIT_SUM, na.rm = TRUE)) %>%
+  pivot_wider(names_from = CREDIT_TYPE,
+              values_from = c(avg_credit, avg_overage)) %>%
+  ungroup()
+
+# __ Version in EDA ----
+bureau_agg_b <- bureau_df %>%
+  group_by(SK_ID_CURR) %>%
+  summarise(avg_days_credit = mean(DAYS_CREDIT, na.rm = TRUE),
+            avg_credit_day_overdue = mean(CREDIT_DAY_OVERDUE, na.rm = TRUE),
+            avg_days_credit_enddate = mean(DAYS_CREDIT_ENDDATE, na.rm = TRUE),
+            avg_amt_credit_max_overdue = mean(AMT_CREDIT_MAX_OVERDUE, na.rm = TRUE),
+            avg_cnt_credit_prolong = mean(CNT_CREDIT_PROLONG, na.rm = TRUE),
+            avg_amt_credit_sum = mean(AMT_CREDIT_SUM, na.rm = TRUE),
+            avg_amt_credit_sum_debt = mean(AMT_CREDIT_SUM_DEBT, na.rm = TRUE),
+            avg_amt_credit_sum_limit = mean(AMT_CREDIT_SUM_LIMIT, na.rm = TRUE),
+            avg_amt_credit_sum_overdue = mean(AMT_CREDIT_SUM_OVERDUE, na.rm = TRUE))
+
+#Convert bureau_agg_b$SK_ID_CURR to factor
+bureau_agg_b$SK_ID_CURR <- as.factor(bureau_agg_b$SK_ID_CURR)
+#Join app_train1 and bureau_agg_b
+app_train2 <- app_train1 %>% inner_join(bureau_agg_b)
+# Cleanup
+remove(app_train,bureau_agg_a,bureau_agg_b,bureau_df,desired_columns,num2fac)
+
+```
+This resulted in two datasets app_train1 which contained only information from the application_train.csv dataset, and app_train2 which contained the same information as app_train1, but added aggregated data from bureau.csv.
+
+In addition to this data preparation, some models required specific treatment of the data to get it into a format that was able to be utilized by that particular model.
+
+## XGBoost
+The XGBoost algorithm requires the use of a numeric matrix.  As such, categorical variables were converted into one-hot encoded dummy variables and boolean values were converted into numeric variables.  Additionally, non-informative ID variable SK_ID_CURR was removed from the matrix and saved for later analysis.
+```{r xgBoost Data Preparation, eval=FALSE}
+app_train1 <- readRDS('app_train1.RDS')
+app_train2 <- readRDS('app_train2.RDS')
+
+# Create Train and Test sets for Modeling
+set.seed(1234)
+train.index <- sample(nrow(app_train1), floor(nrow(app_train1)*0.7), replace = F)
+train_df <- app_train1[train.index,]
+test_df <- app_train1[-train.index,]
+remove(train.index, app_train1)
+
+#Verify Target variable distribution in Train and Test
+CrossTable(train_df$TARGET)
+CrossTable(test_df$TARGET)
+
+ratio <- (sum(ifelse(train_df$TARGET == '0',1,0)))/(sum(ifelse(train_df$TARGET == '1',1,0))) # Ratio Negative Response : Positive Response
+
+# Handle IDs
+id.train <- train_df$SK_ID_CURR
+id.test <- test_df$SK_ID_CURR
+target.train <- ifelse(train_df$TARGET == '1',1,0)
+target.test <- ifelse(test_df$TARGET == '1',1,0)
+train <- train_df %>% select(-c(SK_ID_CURR,TARGET,OWN_CAR_AGE)) # Add TARGET
+test <- test_df %>% select(-c(SK_ID_CURR,TARGET,OWN_CAR_AGE)) # Add TARGET
+
+# Convert Factor Variables to Numeric (Train)
+train_df <- train_df %>% select(-c(SK_ID_CURR,OWN_CAR_AGE)) # Add TARGET
+test_df <- test_df %>% select(-c(SK_ID_CURR,OWN_CAR_AGE)) # Add TARGET
+
+train_df$TARGET <- ifelse(train_df$TARGET == '1',1,0) # TARGET
+train_df$FLAG_OWN_CAR <- ifelse(train_df$FLAG_OWN_CAR == 'Y',1,0) # FLAG_OWN_CAR
+train_df$FLAG_OWN_REALTY <- ifelse(train_df$FLAG_OWN_REALTY == 'Y',1,0) # FLAG_OWN_REALTY
+for(c in 1:length(colnames(train_df))){
+  if(grepl('FLAG_',colnames(train_df)[c])){ 
+    train_df[,c] <- ifelse(train_df[,c] == '1',1,0) # Convert FLAG_ Factor columns to numeric
+  } else if (grepl('REG_', colnames(train_df)[c])) {
+    train_df[,c] <- ifelse(train_df[,c] == '1',1,0) # Convert REG_ Factor columns to numeric
+  } else if (grepl('LIVE_', colnames(train_df)[c])) {
+    train_df[,c] <- ifelse(train_df[,c] == '1',1,0) # Convert LIVE_ Factor columns to numeric
+  } else if (grepl('AMT_REQ_CREDIT_BUREAU_', colnames(train_df)[c])) {
+    train_df[c] <- lapply(train_df[c], function(x) as.numeric(as.character(x))) # Convert Credit Bureau Inquiries Columns to numeric
+  }
+}
+
+# Convert Factor Variables to Numeric (Test)
+test_df$TARGET <- ifelse(test_df$TARGET == '1',1,0) # TARGET
+test_df$FLAG_OWN_CAR <- ifelse(test_df$FLAG_OWN_CAR == 'Y',1,0) # FLAG_OWN_CAR
+test_df$FLAG_OWN_REALTY <- ifelse(test_df$FLAG_OWN_REALTY == 'Y',1,0) # FLAG_OWN_REALTY
+for(c in 1:length(colnames(test_df))){
+  if(grepl('FLAG_',colnames(test_df)[c])){ 
+    test_df[,c] <- ifelse(test_df[,c] == '1',1,0) # Convert FLAG_ Factor columns to numeric
+  } else if (grepl('REG_', colnames(test_df)[c])) {
+    test_df[,c] <- ifelse(test_df[,c] == '1',1,0) # Convert REG_ Factor columns to numeric
+  } else if (grepl('LIVE_', colnames(test_df)[c])) {
+    test_df[,c] <- ifelse(test_df[,c] == '1',1,0) # Convert LIVE_ Factor columns to numeric
+  } else if (grepl('AMT_REQ_CREDIT_BUREAU_', colnames(test_df)[c])) {
+    test_df[c] <- lapply(test_df[c], function(x) as.numeric(as.character(x))) # Convert Credit Bureau Inquiries Columns to numeric
+  }
+}
+
+#Convert remaining Factor variables to dummy variables
+dummy <- dummyVars(" ~ .", data=train_df)
+dtrain_df <- data.frame(predict(dummy, newdata=train_df))
+dummy <- dummyVars(" ~ .", data=test_df)
+dtest_df <- data.frame(predict(dummy, newdata=test_df))
+
+#Return TARGET to factor variable
+dtrain_df$TARGET <- as.factor(dtrain_df$TARGET)
+dtest_df$TARGET <- as.factor(dtest_df$TARGET)
+```
+
+
+# Modeling Process
+A variety of models were prepared for evaluation
+
+## XGBoost
+XGBoost is a Boosted Gradient algorithm
+
+```{r XGBoost Hyperparameter Tuning, eval=FALSE}
+# Set up Tasks
+trainTask <- makeClassifTask(data = dtrain_df, target = 'TARGET')
+testTask <- makeClassifTask(data = dtest_df, target = 'TARGET')
+
+# one-hot encoding
+trainTask <- createDummyFeatures(obj = trainTask)
+testTask <- createDummyFeatures(obj = testTask)
+
+# Create Learner
+lrn <- makeLearner('classif.xgboost', predict.type = 'response')
+lrn$par.vals <- list(objective = 'binary:logistic',
+                     booster = 'gbtree',
+                     eval_metric = 'error'
+                     )
+makeWeightedClassesWrapper(lrn,wcw.weight = ratio)
+
+# Set Hyperparameter Space
+params <- makeParamSet(makeIntegerParam('max_depth', lower = 6, upper = 10),
+                       makeIntegerParam('nrounds', lower = 100, upper = 500),
+                       makeNumericParam('min_child_weight', lower = 5, upper = 10),
+                       makeNumericParam('subsample', lower = 0.5, upper = 0.8),
+                       makeNumericParam('colsample_bytree', lower = 0.7, upper = 1),
+                       makeNumericParam('eta', lower = 0.1, upper = 0.4))
+
+# Set resampling
+rdesc <- makeResampleDesc('CV', stratify = F, iters = 5)
+
+# Set search
+ctrl <- makeTuneControlRandom(maxit = 25)
+
+# Set up Parallel Processing
+parallelStartSocket(cpus = detectCores())
+
+# Tuning
+tune <- tuneParams(learner = lrn, 
+                   task = trainTask,
+                   resampling = rdesc,
+                   measures = fpr,
+                   par.set = params,
+                   control = ctrl,
+                   show.info = T)
+```
+```{r train tuned xgBoost model, eval=FALSE}
+xgb.model <- train(learner = lrn.tune,
+                task = trainTask)
+```
+
+
+# Model Performance
+```{r load saved models, echo=FALSE}
+# Load Saved Models
+xgb.model <- xgb.load('best_model.xgb')
+
+# From this point forward code will be evaluated during Knitting operations ####
+```
+
+## XGBoost Model Performance
+```{r xgboost performance analysis}
+
+xgb.pred <- predict(xgb.model,testTask)
+confusionMatrix(xgb.pred$data$response,xgb.pred$data$truth)
+```
+
+
+# Results
+
+
+# Contributions
+* Roman Brock
+    + 
+* Che Diaz Fadel
+    + 
+* Kalyani Joshi
+    + 
+* Chris Porter
+    + 
+
