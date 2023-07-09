@@ -234,9 +234,9 @@ dtest_df$TARGET <- as.factor(dtest_df$TARGET)
 A variety of models were prepared for evaluation
 
 ## Logistic Regression
-##Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
+Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
 
-# Fit Logistic Regression Model
+### Fit Logistic Regression Model
 model <- glm(TARGET ~ ., data = dtrain_df, family = "binomial")
 summary(model)
 
@@ -490,7 +490,6 @@ testTask <- makeClassifTask(data = dtest_df, target = 'TARGET')
 ```
 
 ```{r xgboost performance analysis}
-
 xgb.pred <- predict(xgb.model,testTask)
 confusionMatrix(xgb.pred$data$response,xgb.pred$data$truth)
 ```

@@ -1713,14 +1713,90 @@ Preparation</a></li>
 </ul></li>
 <li><a href="#modeling-process" id="toc-modeling-process"><span class="toc-section-number">3</span> Modeling Process</a>
 <ul>
-<li><a href="#xgboost-1" id="toc-xgboost-1"><span class="toc-section-number">3.1</span> XGBoost</a></li>
-</ul></li>
-<li><a href="#model-performance" id="toc-model-performance"><span class="toc-section-number">4</span> Model Performance</a>
+<li><a href="#logistic-regression" id="toc-logistic-regression"><span class="toc-section-number">3.1</span> Logistic Regression</a>
 <ul>
-<li><a href="#xgboost-model-performance" id="toc-xgboost-model-performance"><span class="toc-section-number">4.1</span> XGBoost Model Performance</a></li>
+<li><a href="#fit-logistic-regression-model" id="toc-fit-logistic-regression-model"><span class="toc-section-number">3.1.1</span> Fit Logistic Regression
+Model</a></li>
 </ul></li>
-<li><a href="#results" id="toc-results"><span class="toc-section-number">5</span> Results</a></li>
-<li><a href="#contributions" id="toc-contributions"><span class="toc-section-number">6</span> Contributions</a></li>
+</ul></li>
+<li><a href="#predict-probabilities-for-training-and-testing-data" id="toc-predict-probabilities-for-training-and-testing-data"><span class="toc-section-number">4</span> Predict probabilities for training
+and testing data</a>
+<ul>
+<li><a href="#predict-the-probabilities-of-the-target-variable-for-both-the-training-and-testing-data-using-the-logistic-regression-model-model-that-was-previously-fitted." id="toc-predict-the-probabilities-of-the-target-variable-for-both-the-training-and-testing-data-using-the-logistic-regression-model-model-that-was-previously-fitted."><span class="toc-section-number">4.1</span> Predict the probabilities of the
+target variable for both the training and testing data using the
+logistic regression model (model) that was previously fitted.</a></li>
+</ul></li>
+<li><a href="#calculate-auc-scores" id="toc-calculate-auc-scores"><span class="toc-section-number">5</span> Calculate AUC scores</a>
+<ul>
+<li><a href="#area-under-the-curve-auc-scores-for-the-training-and-testing-data-based-on-the-predicted-probabilities-obtained-from-the-logistic-regression-model." id="toc-area-under-the-curve-auc-scores-for-the-training-and-testing-data-based-on-the-predicted-probabilities-obtained-from-the-logistic-regression-model."><span class="toc-section-number">5.1</span> Area Under the Curve (AUC) scores
+for the training and testing data based on the predicted probabilities
+obtained from the logistic regression model.</a></li>
+</ul></li>
+<li><a href="#display-auc-scores" id="toc-display-auc-scores"><span class="toc-section-number">6</span> Display AUC scores</a></li>
+<li><a href="#plot-roc-curve" id="toc-plot-roc-curve"><span class="toc-section-number">7</span> Plot ROC curve</a></li>
+<li><a href="#create-data-frame-for-plotting" id="toc-create-data-frame-for-plotting"><span class="toc-section-number">8</span> Create data frame for
+plotting</a></li>
+<li><a href="#calculate-auc" id="toc-calculate-auc"><span class="toc-section-number">9</span> Calculate AUC</a></li>
+<li><a href="#plot-curve" id="toc-plot-curve"><span class="toc-section-number">10</span> Plot Curve</a></li>
+<li><a href="#get-significant-features" id="toc-get-significant-features"><span class="toc-section-number">11</span> Get significant features</a>
+<ul>
+<li><a href="#identify-the-significant-features-based-on-their-p-values-from-logistic-model." id="toc-identify-the-significant-features-based-on-their-p-values-from-logistic-model."><span class="toc-section-number">11.1</span> Identify the significant features
+based on their p-values from logistic model.</a></li>
+</ul></li>
+<li><a href="#get-significant-column-names" id="toc-get-significant-column-names"><span class="toc-section-number">12</span> Get significant column
+names</a></li>
+<li><a href="#check-if-significant-column-names-exist-in-app_train2" id="toc-check-if-significant-column-names-exist-in-app_train2"><span class="toc-section-number">13</span> Check if significant column names
+exist in app_train2</a></li>
+<li><a href="#get-rows-for-significant-columns" id="toc-get-rows-for-significant-columns"><span class="toc-section-number">14</span> Get rows for significant
+columns</a></li>
+<li><a href="#save-significant-rows-to-a-new-file" id="toc-save-significant-rows-to-a-new-file"><span class="toc-section-number">15</span> Save significant rows to a new
+file</a></li>
+<li><a href="#create-display_importances-function" id="toc-create-display_importances-function"><span class="toc-section-number">16</span> Create display_importances
+function</a></li>
+<li><a href="#get-the-important-feature-names" id="toc-get-the-important-feature-names"><span class="toc-section-number">17</span> Get the important feature
+names</a></li>
+<li><a href="#calculate-the-importance-values-based-on-the-number-of-features" id="toc-calculate-the-importance-values-based-on-the-number-of-features"><span class="toc-section-number">18</span> Calculate the importance values
+based on the number of features</a></li>
+<li><a href="#create-the-feature_importance_df-data-frame" id="toc-create-the-feature_importance_df-data-frame"><span class="toc-section-number">19</span> Create the feature_importance_df
+data frame</a></li>
+<li><a href="#call-the-display_importance-function-to-get-variable-importance-plot" id="toc-call-the-display_importance-function-to-get-variable-importance-plot"><span class="toc-section-number">20</span> Call the display_importance
+function to get variable importance plot</a>
+<ul>
+<li><a href="#based-on-the-analysis-of-the-logistic-regression-model-the-variables-flag_document-83-have-the-most-significant-impact-on-the-outcome-values.-these-variables-along-with-the-ext" id="toc-based-on-the-analysis-of-the-logistic-regression-model-the-variables-flag_document-83-have-the-most-significant-impact-on-the-outcome-values.-these-variables-along-with-the-ext"><span class="toc-section-number">20.0.1</span> Based on the analysis of the
+logistic regression model, the variables Flag_Document 8/3 have the most
+significant impact on the outcome values. These variables, along with
+the Ext</a></li>
+<li><a href="#source-321-variables-from-the-application-dataset-play-an-important-role-in-predicting-the-outcomes." id="toc-source-321-variables-from-the-application-dataset-play-an-important-role-in-predicting-the-outcomes."><span class="toc-section-number">20.0.2</span> source 3,2,1 variables from the
+application dataset, play an important role in predicting the
+outcomes.</a></li>
+<li><a href="#while-the-exact-sources-of-the-external-data-ext-source-321-are-not-specified-by-home-credit-these-variables-prove-to-be-valuable-in-predicting-the-outcomes.-therefore-it-is" id="toc-while-the-exact-sources-of-the-external-data-ext-source-321-are-not-specified-by-home-credit-these-variables-prove-to-be-valuable-in-predicting-the-outcomes.-therefore-it-is"><span class="toc-section-number">20.0.3</span> While the exact sources of the
+external data (Ext source 3,2,1) are not specified by Home Credit, these
+variables prove to be valuable in predicting the outcomes. Therefore, it
+is</a></li>
+<li><a href="#recommended-that-the-company-collects-more-data-from-these-external-data-sources-1-2-and-3-to-further-improve-the-accuracy-of-the-predictions." id="toc-recommended-that-the-company-collects-more-data-from-these-external-data-sources-1-2-and-3-to-further-improve-the-accuracy-of-the-predictions."><span class="toc-section-number">20.0.4</span> recommended that the company
+collects more data from these external data sources (1, 2, and 3) to
+further improve the accuracy of the predictions.</a></li>
+<li><a href="#in-addition-to-the-external-data-sources-other-important-variables-for-predicting-outcomes-include-the-flags-on-phone-and-work-phone-as-well-as-the-variables-related-to-the-number-of-days-employed-and-the-number-of-days-since-birth.-these-variables-also-contribute-significantly-to-the-prediction-of-the-outcomes." id="toc-in-addition-to-the-external-data-sources-other-important-variables-for-predicting-outcomes-include-the-flags-on-phone-and-work-phone-as-well-as-the-variables-related-to-the-number-of-days-employed-and-the-number-of-days-since-birth.-these-variables-also-contribute-significantly-to-the-prediction-of-the-outcomes."><span class="toc-section-number">20.0.5</span> In addition to the external
+data sources, other important variables for predicting outcomes include
+the flags on phone and work phone, as well as the variables related to
+the number ### of days employed and the number of days since birth.
+These variables also contribute significantly to the prediction of the
+outcomes.</a></li>
+<li><a href="#overall-based-on-the-analysis-it-is-recommended-to-focus-on-gathering-more-data-from-the-application-dataset-and-the-specified-external-data-sources-1-2-and-3-to-enhance-the" id="toc-overall-based-on-the-analysis-it-is-recommended-to-focus-on-gathering-more-data-from-the-application-dataset-and-the-specified-external-data-sources-1-2-and-3-to-enhance-the"><span class="toc-section-number">20.0.6</span> Overall, based on the analysis,
+it is recommended to focus on gathering more data from the application
+dataset and the specified external data sources (1, 2, and 3) to enhance
+the</a></li>
+<li><a href="#predictive-power-of-the-model." id="toc-predictive-power-of-the-model."><span class="toc-section-number">20.0.7</span> predictive power of the
+model.</a></li>
+<li><a href="#xgboost-1" id="toc-xgboost-1"><span class="toc-section-number">20.1</span> XGBoost</a></li>
+</ul></li>
+<li><a href="#model-performance" id="toc-model-performance"><span class="toc-section-number">21</span> Model Performance</a>
+<ul>
+<li><a href="#xgboost-model-performance" id="toc-xgboost-model-performance"><span class="toc-section-number">21.1</span> XGBoost Model
+Performance</a></li>
+</ul></li>
+<li><a href="#results" id="toc-results"><span class="toc-section-number">22</span> Results</a></li>
+<li><a href="#contributions" id="toc-contributions"><span class="toc-section-number">23</span> Contributions</a></li>
 </ul>
 </div>
 
@@ -1954,68 +2030,329 @@ the matrix and saved for later analysis.</p>
 <div id="modeling-process" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Modeling Process</h1>
 <p>A variety of models were prepared for evaluation</p>
-<div id="xgboost-1" class="section level2" number="3.1">
-<h2><span class="header-section-number">3.1</span> XGBoost</h2>
+<div id="logistic-regression" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Logistic
+Regression</h2>
+<p>Logistic regression used to model the relationship between a binary
+dependent variable “TARGET” variable all the other variables in the
+dtrain_df dataset.</p>
+<div id="fit-logistic-regression-model" class="section level3" number="3.1.1">
+<h3><span class="header-section-number">3.1.1</span> Fit Logistic
+Regression Model</h3>
+<p>model &lt;- glm(TARGET ~ ., data = dtrain_df, family = “binomial”)
+summary(model)</p>
+</div>
+</div>
+</div>
+<div id="predict-probabilities-for-training-and-testing-data" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Predict probabilities
+for training and testing data</h1>
+<div id="predict-the-probabilities-of-the-target-variable-for-both-the-training-and-testing-data-using-the-logistic-regression-model-model-that-was-previously-fitted." class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Predict the
+probabilities of the target variable for both the training and testing
+data using the logistic regression model (model) that was previously
+fitted.</h2>
+<p>train_probs &lt;- predict(model, newdata = dtrain_df, type =
+“response”) test_probs &lt;- predict(model, newdata = dtest_df, type =
+“response”) ### These probabilities represent the likelihood of each
+observation belonging to the positive class of the target variable.</p>
+</div>
+</div>
+<div id="calculate-auc-scores" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Calculate AUC
+scores</h1>
+<div id="area-under-the-curve-auc-scores-for-the-training-and-testing-data-based-on-the-predicted-probabilities-obtained-from-the-logistic-regression-model." class="section level2" number="5.1">
+<h2><span class="header-section-number">5.1</span> Area Under the Curve
+(AUC) scores for the training and testing data based on the predicted
+probabilities obtained from the logistic regression model.</h2>
+<p>train_roc &lt;- roc(dtrain_df<span class="math inline">\(TARGET,
+train_probs) train_auc &lt;- auc(train_roc) test_roc &lt;-
+roc(dtest_df\)</span>TARGET, test_probs) test_auc &lt;-
+auc(test_roc)</p>
+</div>
+</div>
+<div id="display-auc-scores" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> Display AUC scores</h1>
+<p>output &lt;- data.frame( Model = “Logistic Regression”, “Training
+AUC” = train_auc, “Testing AUC” = test_auc ) print(output) ### Training
+AUC: 0.7705759, Testing AUC: 0.7463063 –&gt; the logistic regression
+model shows a moderate level of discrimination between the classes, with
+better performance on the ### training data compared to the testing
+data.</p>
+</div>
+<div id="plot-roc-curve" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> Plot ROC curve</h1>
+<p>roc_obj &lt;- roc(dtest_df$TARGET, test_probs)</p>
+</div>
+<div id="create-data-frame-for-plotting" class="section level1" number="8">
+<h1><span class="header-section-number">8</span> Create data frame for
+plotting</h1>
+<p>roc_data &lt;- data.frame( FPR = roc_obj<span class="math inline">\(specificities,  TPR =
+roc_obj\)</span>sensitivities )</p>
+</div>
+<div id="calculate-auc" class="section level1" number="9">
+<h1><span class="header-section-number">9</span> Calculate AUC</h1>
+<p>roc_auc &lt;- auc(roc_obj)</p>
+</div>
+<div id="plot-curve" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> Plot Curve</h1>
+<p>ggplot(roc_data, aes(x = TPR, y = FPR)) + geom_line(color =
+“darkorange”) + geom_abline(slope = -1, intercept = 1, linetype =
+“dashed”, color = “navy”) + xlim(0, 1) + ylim(0, 1) + labs(title =
+“Receiver Operating Characteristic”, x = “True Positive Rate”, y =
+“False Positive Rate”) + annotate( “text”, x = 0.6, y = 0.2, label =
+paste0(“AUC =”, round(roc_auc, 2)), color = “darkorange” ) +
+theme_minimal() ## Higher AUC value on the training data compared to the
+testing data. This indicates that the model performs relatively well in
+distinguishing between positive and negative cases, but ## there might
+be some drop in performance when applied to unseen data</p>
+</div>
+<div id="get-significant-features" class="section level1" number="11">
+<h1><span class="header-section-number">11</span> Get significant
+features</h1>
+<div id="identify-the-significant-features-based-on-their-p-values-from-logistic-model." class="section level2" number="11.1">
+<h2><span class="header-section-number">11.1</span> Identify the
+significant features based on their p-values from logistic model.</h2>
+<p>summary_model &lt;- summary(model) significant_features &lt;-
+summary_model<span class="math inline">\(coefficients[summary_model\)</span>coefficients[,
+“Pr(&gt;|z|)”] &lt; 0.01, ] significant_features &lt;-
+format(significant_features, scientific = FALSE)</p>
+</div>
+</div>
+<div id="get-significant-column-names" class="section level1" number="12">
+<h1><span class="header-section-number">12</span> Get significant column
+names</h1>
+<p>significant_columns &lt;- rownames(significant_features)</p>
+</div>
+<div id="check-if-significant-column-names-exist-in-app_train2" class="section level1" number="13">
+<h1><span class="header-section-number">13</span> Check if significant
+column names exist in app_train2</h1>
+<p>existing_columns &lt;- intersect(significant_columns,
+colnames(app_train2))</p>
+</div>
+<div id="get-rows-for-significant-columns" class="section level1" number="14">
+<h1><span class="header-section-number">14</span> Get rows for
+significant columns</h1>
+<p>significant_rows &lt;- app_train2[, c(“TARGET”,
+existing_columns)]</p>
+</div>
+<div id="save-significant-rows-to-a-new-file" class="section level1" number="15">
+<h1><span class="header-section-number">15</span> Save significant rows
+to a new file</h1>
+<p>write.csv(significant_rows, file = “significant_rows.csv”, row.names
+= FALSE)</p>
+</div>
+<div id="create-display_importances-function" class="section level1" number="16">
+<h1><span class="header-section-number">16</span> Create
+display_importances function</h1>
+<p>display_importances &lt;- function(feature_importance_df_) {
+feature_importance_df_ &lt;- feature_importance_df_ %&gt;%
+arrange(desc(importance))</p>
+<pre><code>plt &lt;- ggplot(feature_importance_df_, aes(x = importance, y = reorder(feature, importance, max))) +
+    geom_bar(stat = &quot;identity&quot;, fill = &quot;steelblue&quot;) +
+    labs(title = &quot;Variable Importance&quot;,
+         x = &quot;Importance&quot;,
+         y = &quot;Feature&quot;) +
+    theme_minimal()
+
+print(plt)</code></pre>
+<p>}</p>
+</div>
+<div id="get-the-important-feature-names" class="section level1" number="17">
+<h1><span class="header-section-number">17</span> Get the important
+feature names</h1>
+<p>important_features &lt;- colnames(significant_rows)[-1]</p>
+</div>
+<div id="calculate-the-importance-values-based-on-the-number-of-features" class="section level1" number="18">
+<h1><span class="header-section-number">18</span> Calculate the
+importance values based on the number of features</h1>
+<p>importance_values &lt;- 1:length(important_features)</p>
+</div>
+<div id="create-the-feature_importance_df-data-frame" class="section level1" number="19">
+<h1><span class="header-section-number">19</span> Create the
+feature_importance_df data frame</h1>
+<p>feature_importance_df &lt;- data.frame( feature = important_features,
+importance = importance_values )</p>
+</div>
+<div id="call-the-display_importance-function-to-get-variable-importance-plot" class="section level1" number="20">
+<h1><span class="header-section-number">20</span> Call the
+display_importance function to get variable importance plot</h1>
+<p>display_importances(feature_importance_df)</p>
+<div id="based-on-the-analysis-of-the-logistic-regression-model-the-variables-flag_document-83-have-the-most-significant-impact-on-the-outcome-values.-these-variables-along-with-the-ext" class="section level3" number="20.0.1">
+<h3><span class="header-section-number">20.0.1</span> Based on the
+analysis of the logistic regression model, the variables Flag_Document
+8/3 have the most significant impact on the outcome values. These
+variables, along with the Ext</h3>
+</div>
+<div id="source-321-variables-from-the-application-dataset-play-an-important-role-in-predicting-the-outcomes." class="section level3" number="20.0.2">
+<h3><span class="header-section-number">20.0.2</span> source 3,2,1
+variables from the application dataset, play an important role in
+predicting the outcomes.</h3>
+</div>
+<div id="while-the-exact-sources-of-the-external-data-ext-source-321-are-not-specified-by-home-credit-these-variables-prove-to-be-valuable-in-predicting-the-outcomes.-therefore-it-is" class="section level3" number="20.0.3">
+<h3><span class="header-section-number">20.0.3</span> While the exact
+sources of the external data (Ext source 3,2,1) are not specified by
+Home Credit, these variables prove to be valuable in predicting the
+outcomes. Therefore, it is</h3>
+</div>
+<div id="recommended-that-the-company-collects-more-data-from-these-external-data-sources-1-2-and-3-to-further-improve-the-accuracy-of-the-predictions." class="section level3" number="20.0.4">
+<h3><span class="header-section-number">20.0.4</span> recommended that
+the company collects more data from these external data sources (1, 2,
+and 3) to further improve the accuracy of the predictions.</h3>
+</div>
+<div id="in-addition-to-the-external-data-sources-other-important-variables-for-predicting-outcomes-include-the-flags-on-phone-and-work-phone-as-well-as-the-variables-related-to-the-number-of-days-employed-and-the-number-of-days-since-birth.-these-variables-also-contribute-significantly-to-the-prediction-of-the-outcomes." class="section level3" number="20.0.5">
+<h3><span class="header-section-number">20.0.5</span> In addition to the
+external data sources, other important variables for predicting outcomes
+include the flags on phone and work phone, as well as the variables
+related to the number ### of days employed and the number of days since
+birth. These variables also contribute significantly to the prediction
+of the outcomes.</h3>
+</div>
+<div id="overall-based-on-the-analysis-it-is-recommended-to-focus-on-gathering-more-data-from-the-application-dataset-and-the-specified-external-data-sources-1-2-and-3-to-enhance-the" class="section level3" number="20.0.6">
+<h3><span class="header-section-number">20.0.6</span> Overall, based on
+the analysis, it is recommended to focus on gathering more data from the
+application dataset and the specified external data sources (1, 2, and
+3) to enhance the</h3>
+</div>
+<div id="predictive-power-of-the-model." class="section level3" number="20.0.7">
+<h3><span class="header-section-number">20.0.7</span> predictive power
+of the model.</h3>
+<div id="section" class="section level16" number="20.0.7.0.0.0.0.0.0.0.0.0.0.0.0.1">
+<p class="heading"><span class="header-section-number">20.0.7.0.0.0.0.0.0.0.0.0.0.0.0.1</span>
+</p>
+</div>
+</div>
+<div id="xgboost-1" class="section level2" number="20.1">
+<h2><span class="header-section-number">20.1</span> XGBoost</h2>
 <p>XGBoost is a Boosted Gradient algorithm</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Set up Tasks</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>trainTask <span class="ot">&lt;-</span> <span class="fu">makeClassifTask</span>(<span class="at">data =</span> dtrain_df, <span class="at">target =</span> <span class="st">&#39;TARGET&#39;</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>testTask <span class="ot">&lt;-</span> <span class="fu">makeClassifTask</span>(<span class="at">data =</span> dtest_df, <span class="at">target =</span> <span class="st">&#39;TARGET&#39;</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># one-hot encoding</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>trainTask <span class="ot">&lt;-</span> <span class="fu">createDummyFeatures</span>(<span class="at">obj =</span> trainTask)</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>testTask <span class="ot">&lt;-</span> <span class="fu">createDummyFeatures</span>(<span class="at">obj =</span> testTask)</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co"># Create Learner</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>lrn <span class="ot">&lt;-</span> <span class="fu">makeLearner</span>(<span class="st">&#39;classif.xgboost&#39;</span>, <span class="at">predict.type =</span> <span class="st">&#39;response&#39;</span>)</span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>lrn<span class="sc">$</span>par.vals <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">objective =</span> <span class="st">&#39;binary:logistic&#39;</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>                     <span class="at">booster =</span> <span class="st">&#39;gbtree&#39;</span>,</span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>                     <span class="at">eval_metric =</span> <span class="st">&#39;error&#39;</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>                     )</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="fu">makeWeightedClassesWrapper</span>(lrn,<span class="at">wcw.weight =</span> ratio)</span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co"># Set Hyperparameter Space</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">makeParamSet</span>(<span class="fu">makeIntegerParam</span>(<span class="st">&#39;max_depth&#39;</span>, <span class="at">lower =</span> <span class="dv">6</span>, <span class="at">upper =</span> <span class="dv">10</span>),</span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>                       <span class="fu">makeIntegerParam</span>(<span class="st">&#39;nrounds&#39;</span>, <span class="at">lower =</span> <span class="dv">100</span>, <span class="at">upper =</span> <span class="dv">500</span>),</span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>                       <span class="fu">makeNumericParam</span>(<span class="st">&#39;min_child_weight&#39;</span>, <span class="at">lower =</span> <span class="dv">5</span>, <span class="at">upper =</span> <span class="dv">10</span>),</span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>                       <span class="fu">makeNumericParam</span>(<span class="st">&#39;subsample&#39;</span>, <span class="at">lower =</span> <span class="fl">0.5</span>, <span class="at">upper =</span> <span class="fl">0.8</span>),</span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>                       <span class="fu">makeNumericParam</span>(<span class="st">&#39;colsample_bytree&#39;</span>, <span class="at">lower =</span> <span class="fl">0.7</span>, <span class="at">upper =</span> <span class="dv">1</span>),</span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>                       <span class="fu">makeNumericParam</span>(<span class="st">&#39;eta&#39;</span>, <span class="at">lower =</span> <span class="fl">0.1</span>, <span class="at">upper =</span> <span class="fl">0.4</span>))</span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co"># Set resampling</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>rdesc <span class="ot">&lt;-</span> <span class="fu">makeResampleDesc</span>(<span class="st">&#39;CV&#39;</span>, <span class="at">stratify =</span> F, <span class="at">iters =</span> <span class="dv">5</span>)</span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co"># Set search</span></span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a>ctrl <span class="ot">&lt;-</span> <span class="fu">makeTuneControlRandom</span>(<span class="at">maxit =</span> <span class="dv">25</span>)</span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co"># Set up Parallel Processing</span></span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="fu">parallelStartSocket</span>(<span class="at">cpus =</span> <span class="fu">detectCores</span>())</span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a></span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co"># Tuning</span></span>
-<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a>tune <span class="ot">&lt;-</span> <span class="fu">tuneParams</span>(<span class="at">learner =</span> lrn, </span>
-<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a>                   <span class="at">task =</span> trainTask,</span>
-<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a>                   <span class="at">resampling =</span> rdesc,</span>
-<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a>                   <span class="at">measures =</span> fpr,</span>
-<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a>                   <span class="at">par.set =</span> params,</span>
-<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a>                   <span class="at">control =</span> ctrl,</span>
-<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a>                   <span class="at">show.info =</span> T)</span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>xgb.model <span class="ot">&lt;-</span> <span class="fu">train</span>(<span class="at">learner =</span> lrn.tune,</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>                <span class="at">task =</span> trainTask)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Set up Tasks</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>trainTask <span class="ot">&lt;-</span> <span class="fu">makeClassifTask</span>(<span class="at">data =</span> dtrain_df, <span class="at">target =</span> <span class="st">&#39;TARGET&#39;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>testTask <span class="ot">&lt;-</span> <span class="fu">makeClassifTask</span>(<span class="at">data =</span> dtest_df, <span class="at">target =</span> <span class="st">&#39;TARGET&#39;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># one-hot encoding</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>trainTask <span class="ot">&lt;-</span> <span class="fu">createDummyFeatures</span>(<span class="at">obj =</span> trainTask)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>testTask <span class="ot">&lt;-</span> <span class="fu">createDummyFeatures</span>(<span class="at">obj =</span> testTask)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co"># Create Learner</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>lrn <span class="ot">&lt;-</span> <span class="fu">makeLearner</span>(<span class="st">&#39;classif.xgboost&#39;</span>, <span class="at">predict.type =</span> <span class="st">&#39;response&#39;</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>lrn<span class="sc">$</span>par.vals <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">objective =</span> <span class="st">&#39;binary:logistic&#39;</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>                     <span class="at">booster =</span> <span class="st">&#39;gbtree&#39;</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>                     <span class="at">eval_metric =</span> <span class="st">&#39;error&#39;</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>                     )</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="fu">makeWeightedClassesWrapper</span>(lrn,<span class="at">wcw.weight =</span> ratio)</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co"># Set Hyperparameter Space</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">makeParamSet</span>(<span class="fu">makeIntegerParam</span>(<span class="st">&#39;max_depth&#39;</span>, <span class="at">lower =</span> <span class="dv">6</span>, <span class="at">upper =</span> <span class="dv">10</span>),</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>                       <span class="fu">makeIntegerParam</span>(<span class="st">&#39;nrounds&#39;</span>, <span class="at">lower =</span> <span class="dv">100</span>, <span class="at">upper =</span> <span class="dv">500</span>),</span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>                       <span class="fu">makeNumericParam</span>(<span class="st">&#39;min_child_weight&#39;</span>, <span class="at">lower =</span> <span class="dv">5</span>, <span class="at">upper =</span> <span class="dv">10</span>),</span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>                       <span class="fu">makeNumericParam</span>(<span class="st">&#39;subsample&#39;</span>, <span class="at">lower =</span> <span class="fl">0.5</span>, <span class="at">upper =</span> <span class="fl">0.8</span>),</span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>                       <span class="fu">makeNumericParam</span>(<span class="st">&#39;colsample_bytree&#39;</span>, <span class="at">lower =</span> <span class="fl">0.7</span>, <span class="at">upper =</span> <span class="dv">1</span>),</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>                       <span class="fu">makeNumericParam</span>(<span class="st">&#39;eta&#39;</span>, <span class="at">lower =</span> <span class="fl">0.1</span>, <span class="at">upper =</span> <span class="fl">0.4</span>))</span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co"># Set resampling</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>rdesc <span class="ot">&lt;-</span> <span class="fu">makeResampleDesc</span>(<span class="st">&#39;CV&#39;</span>, <span class="at">stratify =</span> F, <span class="at">iters =</span> <span class="dv">5</span>)</span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co"># Set search</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a>ctrl <span class="ot">&lt;-</span> <span class="fu">makeTuneControlRandom</span>(<span class="at">maxit =</span> <span class="dv">25</span>)</span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co"># Set up Parallel Processing</span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="fu">parallelStartSocket</span>(<span class="at">cpus =</span> <span class="fu">detectCores</span>())</span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co"># Tuning</span></span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a>tune <span class="ot">&lt;-</span> <span class="fu">tuneParams</span>(<span class="at">learner =</span> lrn, </span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a>                   <span class="at">task =</span> trainTask,</span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a>                   <span class="at">resampling =</span> rdesc,</span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a>                   <span class="at">measures =</span> fpr,</span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a>                   <span class="at">par.set =</span> params,</span>
+<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a>                   <span class="at">control =</span> ctrl,</span>
+<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a>                   <span class="at">show.info =</span> T)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>xgb.model <span class="ot">&lt;-</span> <span class="fu">train</span>(<span class="at">learner =</span> lrn.tune,</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>                <span class="at">task =</span> trainTask)</span></code></pre></div>
 </div>
 </div>
-<div id="model-performance" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Model Performance</h1>
-<div id="xgboost-model-performance" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> XGBoost Model
+<div id="model-performance" class="section level1" number="21">
+<h1><span class="header-section-number">21</span> Model Performance</h1>
+<div id="xgboost-model-performance" class="section level2" number="21.1">
+<h2><span class="header-section-number">21.1</span> XGBoost Model
 Performance</h2>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co">#xgb.pred &lt;- predict(xgb.model,testTask)</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#confusionMatrix(xgb.pred$data$response,xgb.pred$data$truth)</span></span></code></pre></div>
+<pre><code>## 
+##  
+##    Cell Contents
+## |-------------------------|
+## |                       N |
+## |         N / Table Total |
+## |-------------------------|
+## 
+##  
+## Total Observations in Table:  184275 
+## 
+##  
+##           |         0 |         1 | 
+##           |-----------|-----------|
+##           |    170069 |     14206 | 
+##           |     0.923 |     0.077 | 
+##           |-----------|-----------|
+## 
+## 
+## 
+## </code></pre>
+<pre><code>## 
+##  
+##    Cell Contents
+## |-------------------------|
+## |                       N |
+## |         N / Table Total |
+## |-------------------------|
+## 
+##  
+## Total Observations in Table:  78976 
+## 
+##  
+##           |         0 |         1 | 
+##           |-----------|-----------|
+##           |     72829 |      6147 | 
+##           |     0.922 |     0.078 | 
+##           |-----------|-----------|
+## 
+## 
+## 
+## </code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>xgb.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(xgb.model,testTask)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">confusionMatrix</span>(xgb.pred<span class="sc">$</span>data<span class="sc">$</span>response,xgb.pred<span class="sc">$</span>data<span class="sc">$</span>truth)</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction     0     1
+##          0 71630  5613
+##          1  1199   534
+##                                           
+##                Accuracy : 0.9137          
+##                  95% CI : (0.9118, 0.9157)
+##     No Information Rate : 0.9222          
+##     P-Value [Acc &gt; NIR] : 1               
+##                                           
+##                   Kappa : 0.1049          
+##                                           
+##  Mcnemar&#39;s Test P-Value : &lt;2e-16          
+##                                           
+##             Sensitivity : 0.98354         
+##             Specificity : 0.08687         
+##          Pos Pred Value : 0.92733         
+##          Neg Pred Value : 0.30814         
+##              Prevalence : 0.92217         
+##          Detection Rate : 0.90698         
+##    Detection Prevalence : 0.97806         
+##       Balanced Accuracy : 0.53520         
+##                                           
+##        &#39;Positive&#39; Class : 0               
+## </code></pre>
 </div>
 </div>
-<div id="results" class="section level1" number="5">
-<h1><span class="header-section-number">5</span> Results</h1>
+<div id="results" class="section level1" number="22">
+<h1><span class="header-section-number">22</span> Results</h1>
 </div>
-<div id="contributions" class="section level1" number="6">
-<h1><span class="header-section-number">6</span> Contributions</h1>
+<div id="contributions" class="section level1" number="23">
+<h1><span class="header-section-number">23</span> Contributions</h1>
 <ul>
 <li>Roman Brock
 <ul>
