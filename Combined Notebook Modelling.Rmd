@@ -398,13 +398,13 @@ tune <- tuneParams(learner = lrn,
 ### Hyperparameters
 Hyperparameter tuning took several hours running in parallel on 16 cpus.  The models were scored on performance in minimizing the FPR measure, as the minimization of Type II errors was determined to be paramount to model performance based on business objectives.
 
-The selected hyperparameters were as follows:
-max_depth = 8
-nrounds = 280
-min_child_weight = 6.96752
-subsample = 0.5409828
-colsample_bytree = 0.7388845
-eta = 0.3878024
+The selected hyperparameters were as follows:  
+max_depth = 8  
+nrounds = 280  
+min_child_weight = 6.96752  
+subsample = 0.5409828  
+colsample_bytree = 0.7388845  
+eta = 0.3878024  
 
 ```{r train tuned xgBoost model, eval=FALSE}
 # Select Hyperparameters from the best model
@@ -524,9 +524,9 @@ The model resulted in a Recall(TPR) = `r TPR` and Specificity(TNR) = `r TNR`.
 
 # Contributions
 * Roman Brock
-    + 
+    + Random Forest
 * Che Diaz Fadel
-    + 
+    + Support Vector Machines
 * Kalyani Joshi
     + Logistic Regression
 * Chris Porter
