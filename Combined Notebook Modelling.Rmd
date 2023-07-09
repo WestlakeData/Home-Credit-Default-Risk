@@ -230,9 +230,129 @@ dtrain_df$TARGET <- as.factor(dtrain_df$TARGET)
 dtest_df$TARGET <- as.factor(dtest_df$TARGET)
 ```
 
-
 # Modeling Process
 A variety of models were prepared for evaluation
+
+## Logistic Regression
+##Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
+
+# Fit Logistic Regression Model
+model <- glm(TARGET ~ ., data = dtrain_df, family = "binomial")
+summary(model)
+
+# Predict probabilities for training and testing data
+## Predict the probabilities of the target variable for both the training and testing data using the logistic regression model (model) that was previously fitted.
+train_probs <- predict(model, newdata = dtrain_df, type = "response")
+test_probs <- predict(model, newdata = dtest_df, type = "response")
+### These probabilities represent the likelihood of each observation belonging to the positive class of the target variable.
+
+# Calculate AUC scores
+## Area Under the Curve (AUC) scores for the training and testing data based on the predicted probabilities obtained from the logistic regression model.
+train_roc <- roc(dtrain_df$TARGET, train_probs)
+train_auc <- auc(train_roc)
+test_roc <- roc(dtest_df$TARGET, test_probs)
+test_auc <- auc(test_roc)
+
+# Display AUC scores
+output <- data.frame(
+    Model = "Logistic Regression",
+    "Training AUC" = train_auc,
+    "Testing AUC" = test_auc
+)
+print(output)
+### Training AUC: 0.7705759, Testing AUC: 0.7463063 -->  the logistic regression model shows a moderate level of discrimination between the classes, with better performance on the 
+### training data compared to the testing data.
+
+# Plot ROC curve
+roc_obj <- roc(dtest_df$TARGET, test_probs)
+
+# Create data frame for plotting
+roc_data <- data.frame(
+    FPR = roc_obj$specificities,
+    TPR = roc_obj$sensitivities
+)
+
+# Calculate AUC
+roc_auc <- auc(roc_obj)
+
+# Plot Curve
+ggplot(roc_data, aes(x = TPR, y = FPR)) +
+    geom_line(color = "darkorange") +
+    geom_abline(slope = -1, intercept = 1, linetype = "dashed", color = "navy") +
+    xlim(0, 1) +
+    ylim(0, 1) +
+    labs(title = "Receiver Operating Characteristic",
+         x = "True Positive Rate",
+         y = "False Positive Rate") +
+    annotate(
+        "text", x = 0.6, y = 0.2,
+        label = paste0("AUC = ", round(roc_auc, 2)),
+        color = "darkorange"
+    ) +
+    theme_minimal()
+## Higher AUC value on the training data compared to the testing data. This indicates that the model performs relatively well in distinguishing between positive and negative cases, but 
+## there might be some drop in performance when applied to unseen data
+
+# Get significant features
+## Identify the significant features based on their p-values from logistic model.
+summary_model <- summary(model)
+significant_features <- summary_model$coefficients[summary_model$coefficients[, "Pr(>|z|)"] < 0.01, ]
+significant_features <- format(significant_features, scientific = FALSE)
+
+# Get significant column names
+significant_columns <- rownames(significant_features)
+
+# Check if significant column names exist in app_train2
+existing_columns <- intersect(significant_columns, colnames(app_train2))
+
+# Get rows for significant columns
+significant_rows <- app_train2[, c("TARGET", existing_columns)]
+
+# Save significant rows to a new file
+write.csv(significant_rows, file = "significant_rows.csv", row.names = FALSE)
+
+# Create display_importances function
+display_importances <- function(feature_importance_df_) {
+    feature_importance_df_ <- feature_importance_df_ %>%
+        arrange(desc(importance))
+    
+    plt <- ggplot(feature_importance_df_, aes(x = importance, y = reorder(feature, importance, max))) +
+        geom_bar(stat = "identity", fill = "steelblue") +
+        labs(title = "Variable Importance",
+             x = "Importance",
+             y = "Feature") +
+        theme_minimal()
+    
+    print(plt)
+}
+
+# Get the important feature names
+important_features <- colnames(significant_rows)[-1]
+
+# Calculate the importance values based on the number of features
+importance_values <- 1:length(important_features)
+
+# Create the feature_importance_df data frame
+feature_importance_df <- data.frame(
+    feature = important_features,
+    importance = importance_values
+)
+
+# Call the display_importance function to get variable importance plot
+display_importances(feature_importance_df)
+
+### Based on the analysis of the logistic regression model, the variables Flag_Document 8/3 have the most significant impact on the outcome values. These variables, along with the Ext 
+### source 3,2,1 variables from the application dataset, play an important role in predicting the outcomes.
+
+### While the exact sources of the external data (Ext source 3,2,1) are not specified by Home Credit, these variables prove to be valuable in predicting the outcomes. Therefore, it is 
+### recommended that the company collects more data from these external data sources (1, 2, and 3) to further improve the accuracy of the predictions.
+
+### In addition to the external data sources, other important variables for predicting outcomes include the flags on phone and work phone, as well as the variables related to the number ### of days employed and the number of days since birth. These variables also contribute significantly to the prediction of the outcomes.
+
+### Overall, based on the analysis, it is recommended to focus on gathering more data from the application dataset and the specified external data sources (1, 2, and 3) to enhance the 
+### predictive power of the model.
+
+################
 
 ## XGBoost
 XGBoost is a Boosted Gradient algorithm
