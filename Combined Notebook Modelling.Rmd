@@ -289,12 +289,86 @@ xgb.model <- train(learner = lrn.tune,
 # Model Performance
 ```{r load saved models, echo=FALSE}
 # Load Saved Models
-xgb.model <- xgb.load('best_model.xgb')
+xgb.model <- readRDS('best_model_tuned2.xgb')
 
 # From this point forward code will be evaluated during Knitting operations ####
 ```
 
 ## XGBoost Model Performance
+```{r hidden data prep, echo=FALSE}
+app_train1 <- readRDS('app_train2.RDS')
+
+# Create Train and Test sets for Modeling
+set.seed(1234)
+train.index <- sample(nrow(app_train1), floor(nrow(app_train1)*0.7), replace = F)
+train_df <- app_train1[train.index,]
+test_df <- app_train1[-train.index,]
+remove(train.index, app_train1)
+
+#Verify Target variable distribution in Train and Test
+CrossTable(train_df$TARGET)
+CrossTable(test_df$TARGET)
+
+ratio <- (sum(ifelse(train_df$TARGET == '0',1,0)))/(sum(ifelse(train_df$TARGET == '1',1,0))) # Ratio Negative Response : Positive Response
+
+# Handle IDs
+id.train <- train_df$SK_ID_CURR
+id.test <- test_df$SK_ID_CURR
+target.train <- ifelse(train_df$TARGET == '1',1,0)
+target.test <- ifelse(test_df$TARGET == '1',1,0)
+
+# Convert Factor Variables to Numeric (Train)
+train_df <- train_df %>% select(-c(SK_ID_CURR,OWN_CAR_AGE)) # Add TARGET
+test_df <- test_df %>% select(-c(SK_ID_CURR,OWN_CAR_AGE)) # Add TARGET
+
+train_df[77:85] <- train_df[77:85] %>% replace(is.na(.), 0) # Replace NaN values
+test_df[77:85] <- test_df[77:85] %>% replace(is.na(.), 0) # Replace NaN values
+train_df$TARGET <- ifelse(train_df$TARGET == '1',1,0) # TARGET
+train_df$FLAG_OWN_CAR <- ifelse(train_df$FLAG_OWN_CAR == 'Y',1,0) # FLAG_OWN_CAR
+train_df$FLAG_OWN_REALTY <- ifelse(train_df$FLAG_OWN_REALTY == 'Y',1,0) # FLAG_OWN_REALTY
+for(c in 1:length(colnames(train_df))){
+  if(grepl('FLAG_',colnames(train_df)[c])){ 
+    train_df[,c] <- ifelse(train_df[,c] == '1',1,0) # Convert FLAG_ Factor columns to numeric
+  } else if (grepl('REG_', colnames(train_df)[c])) {
+    train_df[,c] <- ifelse(train_df[,c] == '1',1,0) # Convert REG_ Factor columns to numeric
+  } else if (grepl('LIVE_', colnames(train_df)[c])) {
+    train_df[,c] <- ifelse(train_df[,c] == '1',1,0) # Convert LIVE_ Factor columns to numeric
+  } else if (grepl('AMT_REQ_CREDIT_BUREAU_', colnames(train_df)[c])) {
+    train_df[c] <- lapply(train_df[c], function(x) as.numeric(as.character(x))) # Convert Credit Bureau Inquiries Columns to numeric
+  }
+}
+
+# Convert Factor Variables to Numeric (Test)
+test_df$TARGET <- ifelse(test_df$TARGET == '1',1,0) # TARGET
+test_df$FLAG_OWN_CAR <- ifelse(test_df$FLAG_OWN_CAR == 'Y',1,0) # FLAG_OWN_CAR
+test_df$FLAG_OWN_REALTY <- ifelse(test_df$FLAG_OWN_REALTY == 'Y',1,0) # FLAG_OWN_REALTY
+for(c in 1:length(colnames(test_df))){
+  if(grepl('FLAG_',colnames(test_df)[c])){ 
+    test_df[,c] <- ifelse(test_df[,c] == '1',1,0) # Convert FLAG_ Factor columns to numeric
+  } else if (grepl('REG_', colnames(test_df)[c])) {
+    test_df[,c] <- ifelse(test_df[,c] == '1',1,0) # Convert REG_ Factor columns to numeric
+  } else if (grepl('LIVE_', colnames(test_df)[c])) {
+    test_df[,c] <- ifelse(test_df[,c] == '1',1,0) # Convert LIVE_ Factor columns to numeric
+  } else if (grepl('AMT_REQ_CREDIT_BUREAU_', colnames(test_df)[c])) {
+    test_df[c] <- lapply(test_df[c], function(x) as.numeric(as.character(x))) # Convert Credit Bureau Inquiries Columns to numeric
+  }
+}
+
+#Convert remaining Factor variables to dummy variables
+dummy <- dummyVars(" ~ .", data=train_df)
+dtrain_df <- data.frame(predict(dummy, newdata=train_df))
+dummy <- dummyVars(" ~ .", data=test_df)
+dtest_df <- data.frame(predict(dummy, newdata=test_df))
+
+#Return TARGET to factor variable
+dtrain_df$TARGET <- as.factor(dtrain_df$TARGET)
+dtest_df$TARGET <- as.factor(dtest_df$TARGET)
+
+# Set up Tasks
+trainTask <- makeClassifTask(data = dtrain_df, target = 'TARGET')
+testTask <- makeClassifTask(data = dtest_df, target = 'TARGET')
+```
+
 ```{r xgboost performance analysis}
 
 xgb.pred <- predict(xgb.model,testTask)
