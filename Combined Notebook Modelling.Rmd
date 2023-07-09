@@ -23,25 +23,14 @@ options(tibble.print_max = 40,
 ```
 
 # Introduction  
-Unbanked individuals represent both an underserved demographic as well as a typically
-untapped market by reputable creditors. Home Credit seeks to fill this gap in service. There are
-unique challenges that accompany establishing creditworthiness among a population that by
-definition has little to no financial history, verifiable assets, or traditional means to qualify for a
-loan.
+Unbanked individuals represent both an underserved demographic as well as a typically untapped market by reputable creditors. Home Credit seeks to fill this gap in service. There are unique challenges that accompany establishing creditworthiness among a population that by definition has little to no financial history, verifiable assets, or traditional means to qualify for a loan.
 
 ## Project Scope
-This project will utilize machine learning algorithms to develop a classification model which will
-use available data about Home Credit customers to improve prediction of those that are likely to
-repay loans granted by Home Credit. The team will test a number of possible classification
-models in order to develop the most accurate model on data outside the training data. An
-added benefit of this project is the potential to identify possible additional data that might further
-inform the classification model. A successful model will provide greater predictive power than a
-simple prediction based upon majority class statistics and will allow Home Credit to loan to
-customers with confidence that repayment will in return grow available assets to the company in
-order to further its mission of providing credit to the underserved.
+This project will utilize machine learning algorithms to develop a classification model which will use available data about Home Credit customers to improve prediction of those that are likely to repay loans granted by Home Credit. The team will test a number of possible classification models in order to develop the most accurate model on data outside the training data. A successful model will provide greater perfomance in terms of limiting Type II errors, than a simple prediction based upon majority class statistics and will allow Home Credit to loan to customers with confidence that repayment will in return grow available assets to the company in order to further its mission of providing credit to the underserved.
 
 The dataset was previously explored and was determined to be suitable for data modelling purposes.  In this notebook we document the various modeling strategies explored as well as any included data preparation undertaken prior to modeling.  We then compare the various models performance and report our results.
 
+# Data Preparation
 ## Load Libraries
 ```{r libraries}
 # xgBoost dependencies
@@ -55,8 +44,6 @@ library(parallelMap)
 library(ggplot2)
 library(pROC)
 ```
-
-# Data Preparation
 ## Standardized Data Set Preparation
 In accordance with the information detailed in our previous EDA notebook, we created a standardized data set that utilized the same variables for all models.
 ```{r standardized data sets, echo=TRUE, eval=FALSE}
@@ -233,7 +220,6 @@ dtest_df$TARGET <- as.factor(dtest_df$TARGET)
 # Modeling Process
 A variety of models were prepared for evaluation
 
-<<<<<<< HEAD
 ## Logistic Regression
 Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
 
@@ -242,7 +228,6 @@ Logistic regression used to model the relationship between a binary dependent va
 ```{r Logistic regression, echo=TRUE, eval=FALSE}
 ## Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
 # Fit Logistic Regression Model
->>>>>>> d3a0614c03a9e75c5d3d7a194423bdb40bc0de3a
 model <- glm(TARGET ~ ., data = dtrain_df, family = "binomial")
 summary(model)
 ```
@@ -363,8 +348,9 @@ display_importances(feature_importance_df)
 ### predictive power of the model.
 
 ```
+
 ## XGBoost
-XGBoost is a Boosted Gradient algorithm
+XGBoost is a Boosted Gradient algorithm.  It has a number of user set hyperparameters that can influence model performance.  In order to determine the best hyperparameter settings for the model, a random tuning grid was utilized.  Initially, a grid with larger ranges and fewer iterations was used to evaluate if any of the hyperparameters had regions of the grid that appeared to yield better performance.  Once the grid was refined, a final tuning run was made to yield the best performing model on the data.  The gamma hyperparameter was not utilized as it is more effective with smaller trees than the model eventually utilized.
 
 ```{r XGBoost Hyperparameter Tuning, eval=FALSE}
 # Set up Tasks
@@ -384,8 +370,8 @@ lrn$par.vals <- list(objective = 'binary:logistic',
 makeWeightedClassesWrapper(lrn,wcw.weight = ratio)
 
 # Set Hyperparameter Space
-params <- makeParamSet(makeIntegerParam('max_depth', lower = 6, upper = 10),
-                       makeIntegerParam('nrounds', lower = 100, upper = 500),
+params <- makeParamSet(makeIntegerParam('max_depth', lower = 8, upper = 9),
+                       makeIntegerParam('nrounds', lower = 200, upper = 500),
                        makeNumericParam('min_child_weight', lower = 5, upper = 10),
                        makeNumericParam('subsample', lower = 0.5, upper = 0.8),
                        makeNumericParam('colsample_bytree', lower = 0.7, upper = 1),
@@ -409,11 +395,28 @@ tune <- tuneParams(learner = lrn,
                    control = ctrl,
                    show.info = T)
 ```
+
+### Hyperparameters
+Hyperparameter tuning took several hours running in parallel on 16 cpus.  The models were scored on performance in minimizing the FPR measure, as the minimization of Type II errors was determined to be paramount to model performance based on business objectives.
+
+The selected hyperparameters were as follows:
+max_depth = 8
+nrounds = 280
+min_child_weight = 6.96752
+subsample = 0.5409828
+colsample_bytree = 0.7388845
+eta = 0.3878024
+
 ```{r train tuned xgBoost model, eval=FALSE}
+# Select Hyperparameters from the best model
+lrn.tune <- setHyperPars(lrn, par.vals = tune$x)
+
+# Train the model using selected hyperparameters
 xgb.model <- train(learner = lrn.tune,
                 task = trainTask)
 ```
-
+### Benchmarking
+Training the model using the selected hyperparameters was benchmarked and averaged 285s per training run.
 
 # Model Performance
 ```{r load saved models, echo=FALSE}
@@ -513,7 +516,7 @@ confusionMatrix(xgb.pred$data$response,xgb.pred$data$truth)
 * Che Diaz Fadel
     + 
 * Kalyani Joshi
-    + 
+    + Logistic Regression
 * Chris Porter
-    + 
+    + XGBoost
 
