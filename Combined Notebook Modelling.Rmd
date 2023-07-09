@@ -224,7 +224,6 @@ A variety of models were prepared for evaluation
 Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
 
 ### Fit Logistic Regression Model
-=======
 ```{r Logistic regression, echo=TRUE, eval=FALSE}
 ## Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
 # Fit Logistic Regression Model
@@ -436,12 +435,8 @@ train.index <- sample(nrow(app_train1), floor(nrow(app_train1)*0.7), replace = F
 train_df <- app_train1[train.index,]
 test_df <- app_train1[-train.index,]
 remove(train.index, app_train1)
-
-#Verify Target variable distribution in Train and Test
-CrossTable(train_df$TARGET)
-CrossTable(test_df$TARGET)
-
-ratio <- (sum(ifelse(train_df$TARGET == '0',1,0)))/(sum(ifelse(train_df$TARGET == '1',1,0))) # Ratio Negative Response : Positive Response
+# Ratio Negative Response : Positive Response
+ratio <- (sum(ifelse(train_df$TARGET == '0',1,0)))/(sum(ifelse(train_df$TARGET == '1',1,0))) 
 
 # Handle IDs
 id.train <- train_df$SK_ID_CURR
