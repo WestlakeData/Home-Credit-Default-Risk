@@ -219,6 +219,98 @@ dtest_df <- data.frame(predict(dummy, newdata=test_df))
 dtrain_df$TARGET <- as.factor(dtrain_df$TARGET)
 dtest_df$TARGET <- as.factor(dtest_df$TARGET)
 ```
+## Data Pre-processing for Logistic Regression
+```{r}
+#Taking joined data to new variable
+data_ktrain <-app_train2
+
+#Function to calculate missing percentage
+calculate_missing_percentage <- function(data) {
+  missing_count <- colSums(is.na(data))
+  missing_percentage <- missing_count / nrow(data) * 100
+  result <- data.frame(Column = names(missing_count), Missing_Percentage = missing_percentage)
+  result$Missing_Percentage <- sprintf("%.2f%%", result$Missing_Percentage)
+  result <- result[result$Missing_Percentage != "0.00%", , drop = FALSE]
+  result <- result[order(result$Missing_Percentage, decreasing = TRUE), , drop = FALSE]
+  return(result)
+}
+
+#See missing percentage data
+print(calculate_missing_percentage(data_ktrain))
+
+# Handle missing values ----
+# Drop columns with more than 49% missing data
+missing_threshold <- 0.6
+data_ktrain_clean <- data_ktrain %>%
+    select(where(~ mean(!is.na(.)) > 1 - missing_threshold))
+
+print(calculate_missing_percentage(data_ktrain_clean))
+```
+```{r}
+#Data Imputation
+# Numeric variables
+data_ktrain_clean$avg_amt_credit_sum_limit <- ifelse(is.na(data_ktrain_clean$avg_amt_credit_sum_limit),
+                                              mean(data_ktrain_clean$avg_amt_credit_sum_limit, na.rm = TRUE),
+                                              data_ktrain_clean$avg_amt_credit_sum_limit)
+data_ktrain_clean$EXT_SOURCE_3 <- ifelse(is.na(data_ktrain_clean$EXT_SOURCE_3),
+                                   median(data_ktrain_clean$EXT_SOURCE_3, na.rm = TRUE),
+                                   data_ktrain_clean$EXT_SOURCE_3)
+data_ktrain_clean$avg_amt_credit_max_overdue <- ifelse(is.na(data_ktrain_clean$avg_amt_credit_max_overdue),
+                                                 mean(data_ktrain_clean$avg_amt_credit_max_overdue, na.rm = TRUE),
+                                                 data_ktrain_clean$avg_amt_credit_max_overdue)
+data_ktrain_clean$avg_amt_credit_sum_debt <- ifelse(is.na(data_ktrain_clean$avg_amt_credit_sum_debt),
+                                              mean(data_ktrain_clean$avg_amt_credit_sum_debt, na.rm = TRUE),
+                                              data_ktrain_clean$avg_amt_credit_sum_debt)
+data_ktrain_clean$DAYS_EMPLOYED <- ifelse(is.na(data_ktrain_clean$DAYS_EMPLOYED),
+                                    median(data_ktrain_clean$DAYS_EMPLOYED, na.rm = TRUE),
+                                    data_ktrain_clean$DAYS_EMPLOYED)
+data_ktrain_clean$avg_days_credit_enddate <- ifelse(is.na(data_ktrain_clean$avg_days_credit_enddate),
+                                              median(data_ktrain_clean$avg_days_credit_enddate, na.rm = TRUE),
+                                              data_ktrain_clean$avg_days_credit_enddate)
+
+# Categorical variables
+data_ktrain_clean$OCCUPATION_TYPE <- ifelse(is.na(data_ktrain_clean$OCCUPATION_TYPE),
+                                      levels(data_ktrain_clean$OCCUPATION_TYPE)[which.max(table(data_ktrain_clean$OCCUPATION_TYPE))],
+                                      data_ktrain_clean$OCCUPATION_TYPE)
+data_ktrain_clean$ORGANIZATION_TYPE <- ifelse(is.na(data_ktrain_clean$ORGANIZATION_TYPE),
+                                        levels(data_ktrain_clean$ORGANIZATION_TYPE)[which.max(table(data_ktrain_clean$ORGANIZATION_TYPE))],
+                                        data_ktrain_clean$ORGANIZATION_TYPE)
+data_ktrain_clean$NAME_TYPE_SUITE <- ifelse(is.na(data_ktrain_clean$NAME_TYPE_SUITE),
+                                      levels(data_ktrain_clean$NAME_TYPE_SUITE)[which.max(table(data_ktrain_clean$NAME_TYPE_SUITE))],
+                                      data_ktrain_clean$NAME_TYPE_SUITE)
+data_ktrain_clean$EXT_SOURCE_2 <- ifelse(is.na(data_ktrain_clean$EXT_SOURCE_2),
+                                         median(data_ktrain_clean$EXT_SOURCE_2, na.rm = TRUE),
+                                         data_ktrain_clean$EXT_SOURCE_2)
+
+```
+```{r}
+# Upsampling the data
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Split data into training and testing sets
+train_indices_glm <- sample(1:nrow(data_ktrain_clean), 0.7 * nrow(data_ktrain_clean))
+train_glm <- data_ktrain_clean[train_indices_glm, ]
+test_glm <- data_ktrain_clean[-train_indices_glm, ]
+
+# Check the class distribution of the response variable
+table(train_glm$TARGET)
+
+# Upsample the minority class (positive class) in the training data using DMwR
+train_glm_upsampled <- ovun.sample(TARGET ~ ., data = train_glm, method = "both", p = 0.5, seed = 123)$data
+
+# Verify the class distribution of the upsampled training data
+table(train_glm_upsampled$TARGET)
+
+#Excluding SK_ID_CURR column
+selected_features <- names(train_glm_upsampled)[2:86]
+selected_features <- selected_features[sapply(train_glm_upsampled[selected_features], function(x) length(unique(x))) > 1]
+
+```
+Before upsampling, the class distribution is imbalanced, with Class 0 (the majority class) having significantly more observations than Class 1 (the minority class). This class imbalance can impact the performance of the logistic regression model, as it may be biased towards the majority class.
+
+After applying upsampling, the class distribution becomes more balanced, with both classes having a similar number of observations. The upsampling technique increases the number of observations in the minority class (Class 1) to match the number of observations in the majority class (Class 0). This balanced dataset can help improve the model's ability to learn patterns and make accurate predictions for both classes.
 
 ## Random Forest
 Random Forest models (at least in this package) have limits on the amount of levels in factored predictors and also don't play well with excessive numbers of NA values.
@@ -269,132 +361,50 @@ summary(app_train3)
 # Modeling Process
 A variety of models were prepared for evaluation
 
-## Logistic Regression
-Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
+## Modeling for Logistic Regression
+```{r}
+# Fitting model 
 
-### Fit Logistic Regression Model
-```{r Logistic regression, echo=TRUE, eval=FALSE}
-## Logistic regression used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dtrain_df dataset.
-# Fit Logistic Regression Model
-model <- glm(TARGET ~ ., data = dtrain_df, family = "binomial")
-summary(model)
+model_glm <- glm(TARGET ~ ., data = train_glm_upsampled[(selected_features)], family = "binomial")
+
 ```
-
-```{r Predict probabilities for training and testing data, echo=TRUE, eval=FALSE}
-## Predict the probabilities of the target variable for both the training and testing data using the logistic regression model (model) that was previously fitted.
-train_probs <- predict(model, newdata = dtrain_df, type = "response")
-test_probs <- predict(model, newdata = dtest_df, type = "response")
-### These probabilities represent the likelihood of each observation belonging to the positive class of the target variable.
-```
-
-```{r Calculate AUC scores, echo=TRUE, eval=FALSE}
-## Area Under the Curve (AUC) scores for the training and testing data based on the predicted probabilities obtained from the logistic regression model.
-train_roc <- roc(dtrain_df$TARGET, train_probs)
-train_auc <- auc(train_roc)
-test_roc <- roc(dtest_df$TARGET, test_probs)
-test_auc <- auc(test_roc)
-
-# Display AUC scores
-output <- data.frame(
-    Model = "Logistic Regression",
-    "Training AUC" = train_auc,
-    "Testing AUC" = test_auc
-)
-print(output)
-### Training AUC: 0.7705759, Testing AUC: 0.7463063 -->  the logistic regression model shows a moderate level of discrimination between the classes, with better performance on the 
-### training data compared to the testing data.
-```
-
-```{r  Plot ROC curve, echo=TRUE, eval=FALSE}
-roc_obj <- roc(dtest_df$TARGET, test_probs)
-
-# Create data frame for plotting
-roc_data <- data.frame(
-    FPR = roc_obj$specificities,
-    TPR = roc_obj$sensitivities
-)
-
-# Calculate AUC
-roc_auc <- auc(roc_obj)
-
-# Plot Curve
-ggplot(roc_data, aes(x = TPR, y = FPR)) +
-    geom_line(color = "darkorange") +
-    geom_abline(slope = -1, intercept = 1, linetype = "dashed", color = "navy") +
-    xlim(0, 1) +
-    ylim(0, 1) +
-    labs(title = "Receiver Operating Characteristic",
-         x = "True Positive Rate",
-         y = "False Positive Rate") +
-    annotate(
-        "text", x = 0.6, y = 0.2,
-        label = paste0("AUC = ", round(roc_auc, 2)),
-        color = "darkorange"
-    ) +
-    theme_minimal()
-## Higher AUC value on the training data compared to the testing data. This indicates that the model performs relatively well in distinguishing between positive and negative cases, but 
-## there might be some drop in performance when applied to unseen data
-```
-```{r Getting plot for significant features, echo=TRUE, eval=FALSE}
+```{r}
 # Get significant features
-## Identify the significant features based on their p-values from logistic model.
-summary_model <- summary(model)
-significant_features <- summary_model$coefficients[summary_model$coefficients[, "Pr(>|z|)"] < 0.01, ]
+significant_features <- summary(model_glm)$coefficients[summary(model_glm)$coefficients[, "Pr(>|z|)"] < 0.05, ]
 significant_features <- format(significant_features, scientific = FALSE)
 
 # Get significant column names
 significant_columns <- rownames(significant_features)
 
-# Check if significant column names exist in app_train2
-existing_columns <- intersect(significant_columns, colnames(app_train2))
+# Check if significant column names exist in upsampled file
+existing_columns <- intersect(significant_columns, colnames(train_glm_upsampled))
 
 # Get rows for significant columns
-significant_rows <- app_train2[, c("TARGET", existing_columns)]
+significant_rows <- train_glm_upsampled[, c("TARGET", existing_columns)]
 
 # Save significant rows to a new file
-write.csv(significant_rows, file = "significant_rows.csv", row.names = FALSE)
+write.csv(significant_rows, file = "significant_rows_upsampled.csv", row.names = FALSE)
 
-# Create display_importances function
-display_importances <- function(feature_importance_df_) {
-    feature_importance_df_ <- feature_importance_df_ %>%
-        arrange(desc(importance))
-    
-    plt <- ggplot(feature_importance_df_, aes(x = importance, y = reorder(feature, importance, max))) +
-        geom_bar(stat = "identity", fill = "steelblue") +
-        labs(title = "Variable Importance",
-             x = "Importance",
-             y = "Feature") +
-        theme_minimal()
-    
-    print(plt)
-}
+str(significant_rows)
+```
 
-# Get the important feature names
-important_features <- colnames(significant_rows)[-1]
+```{r}
+# Read the significant_rows file
+significant_rows <- read.csv("significant_rows_upsampled.csv")
+```
 
-# Calculate the importance values based on the number of features
-importance_values <- 1:length(important_features)
+```{r}
+# Split the data into training and testing sets
+set.seed(123)
+train_indices_1 <- caret::createDataPartition(significant_rows$TARGET, p = 0.7, list = FALSE)
+train_data_1 <- significant_rows[train_indices_1, ]
+test_data_1 <- significant_rows[-train_indices_1, ]
 
-# Create the feature_importance_df data frame
-feature_importance_df <- data.frame(
-    feature = important_features,
-    importance = importance_values
-)
+```
 
-# Call the display_importance function to get variable importance plot
-display_importances(feature_importance_df)
-
-### Based on the analysis of the logistic regression model, the variables Flag_Document 8/3 have the most significant impact on the outcome values. These variables, along with the Ext 
-### source 3,2,1 variables from the application dataset, play an important role in predicting the outcomes.
-
-### While the exact sources of the external data (Ext source 3,2,1) are not specified by Home Credit, these variables prove to be valuable in predicting the outcomes. Therefore, it is 
-### recommended that the company collects more data from these external data sources (1, 2, and 3) to further improve the accuracy of the predictions.
-
-### In addition to the external data sources, other important variables for predicting outcomes include the flags on phone and work phone, as well as the variables related to the number ### of days employed and the number of days since birth. These variables also contribute significantly to the prediction of the outcomes.
-
-### Overall, based on the analysis, it is recommended to focus on gathering more data from the application dataset and the specified external data sources (1, 2, and 3) to enhance the 
-### predictive power of the model.
-
+```{r}
+# Fit logistic regression model on training data for significant features
+model <- glm(TARGET ~ ., data = train_data_1, family = "binomial")
 ```
 
 ## XGBoost
@@ -497,13 +507,111 @@ saveRDS(rf, "rf.rds")
 ```
 
 # Model Performance
+
+## Model Performance for Logistic regression
+```{r}
+# Predict probabilities for training and testing data
+train_probs <- predict(model, train_data_1, type = "response")
+test_pred <- predict(model, test_data_1, type = "response")
+
+# Convert predicted values to factors with the same levels as the target variable
+pred <- as.factor(ifelse(test_pred > 0.5, "1", "0"))
+
+# Convert the actual target variable to a factor with the same levels
+actual <- as.factor(test_data_1$TARGET)
+
+# Calculate the confusion matrix
+confusionMatrix(pred, actual)
+
+```
+
+```{r}
+# Calculate AUC scores
+train_auc_glm <- roc(train_data_1$TARGET, train_probs)$auc
+test_auc_glm <- roc(test_data_1$TARGET, test_pred)$auc
+
+# Display the AUC scores
+output <- data.frame(
+    Model = "Logistic Regression",
+    "Training AUC" = train_auc_glm,
+    "Testing AUC" = test_auc_glm
+)
+print(output)
+```
+
+```{r}
+# Plt ROC Curve
+# Calculate FPR, TPR, and thresholds
+roc_data <- roc(test_data_1$TARGET, test_pred)
+fpr <- roc_data$specificities
+tpr <- roc_data$sensitivities
+thresholds <- roc_data$thresholds
+
+# Calculate AUC
+auc <- auc(roc_data)
+
+# Plot ROC curve
+ggplot() +
+    geom_line(data = data.frame(fpr = 1-fpr, tpr = tpr), aes(x = fpr, y = tpr), color = "darkorange") +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "navy") +
+    scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+    scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+    labs(title = "ROC curve",
+         x = "FPR",
+         y = "TPR") +
+    annotate(
+        "text", x = 0.6, y = 0.2,
+        label = paste0("AUC = ", round(auc, 3)),
+        color = "darkorange"
+    ) +
+    theme_minimal() +
+    theme(plot.title = element_text(size = 20),
+          axis.title = element_text(size = 15))
+
+```
+```{r}
+# Create display_importances function
+display_importances <- function(feature_importance_df_) {
+    feature_importance_df_ <- feature_importance_df_ %>%
+        arrange(desc(importance))
+    
+    plt <- ggplot(feature_importance_df_, aes(x = importance, y = reorder(feature, importance, max))) +
+        geom_bar(stat = "identity", fill = "steelblue") +
+        labs(title = "Variable Importance",
+             x = "Importance",
+             y = "Feature") +
+        theme_minimal()
+    
+    print(plt)
+}
+
+# Get the important feature names
+important_features <- colnames(significant_rows)[-1]
+
+# Calculate the importance values based on the number of features
+importance_values <- 1:length(important_features)
+
+# Create the feature_importance_df data frame
+feature_importance_df <- data.frame(
+    feature = important_features,
+    importance = importance_values
+)
+
+# Call the display_importance function to get variable importance plot
+display_importances(feature_importance_df)
+```
+
+Based on the analysis of the logistic regression model, the variables avg_amt_credit_sum_debt have the most significant impact on the outcome values. These variables, along with the credit_sum and max_overdue, play an important role in predicting the outcomes.
+
+In addition to the external data sources, other important variables for predicting outcomes include the days_employed and days_birth.
+
+
 ```{r load saved models, echo=FALSE}
 # Load Saved Models
 xgb.model <- readRDS('best_model_tuned2.xgb')
 rf.model <- readRDS('rf.rds')
 # From this point forward code will be evaluated during Knitting operations ####
 ```
-
 ## XGBoost Model Performance
 ```{r hidden data prep, echo=FALSE}
 app_train1 <- readRDS('app_train2.RDS')
