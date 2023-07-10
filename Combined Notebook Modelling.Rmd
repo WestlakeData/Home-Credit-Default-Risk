@@ -1,6 +1,6 @@
 ---
 title: "Home Credit Default Risk"
-subtitle: "Modelling"
+subtitle: "Modeling"
 author: "Roman Brock, Che Diaz Fadel, Kalyani Joshi, and Chris Porter"
 output: 
   html_document:
@@ -43,6 +43,9 @@ library(parallel)
 library(parallelMap)
 library(ggplot2)
 library(pROC)
+library(skimr)
+library(randomForest)
+library(ROCR)
 ```
 ## Standardized Data Set Preparation
 In accordance with the information detailed in our previous EDA notebook, we created a standardized data set that utilized the same variables for all models.
@@ -215,6 +218,52 @@ dtest_df <- data.frame(predict(dummy, newdata=test_df))
 #Return TARGET to factor variable
 dtrain_df$TARGET <- as.factor(dtrain_df$TARGET)
 dtest_df$TARGET <- as.factor(dtest_df$TARGET)
+```
+
+## Random Forest
+Random Forest models (at least in this package) have limits on the amount of levels in factored predictors and also don't play well with excessive numbers of NA values.
+
+```{r Random Forest Data Preparation, eval=FALSE}
+head(app_train2)
+summary(app_train2)
+
+## Removing columns with many NAs / little variation
+app_train3 <- app_train2 %>% select(-c(OWN_CAR_AGE, 
+                                       SK_ID_CURR, AVG_EXT_SCORE, EXT_SOURCE_1, avg_amt_credit_max_overdue,
+                                       FLAG_DOCUMENT_10, FLAG_DOCUMENT_11, FLAG_DOCUMENT_12,
+                                       FLAG_DOCUMENT_13, FLAG_DOCUMENT_14, FLAG_DOCUMENT_15,
+                                       FLAG_DOCUMENT_16, FLAG_DOCUMENT_17, FLAG_DOCUMENT_18,
+                                       FLAG_DOCUMENT_19, FLAG_DOCUMENT_20, FLAG_DOCUMENT_21,
+                                       FLAG_DOCUMENT_2, FLAG_DOCUMENT_3, FLAG_DOCUMENT_4,
+                                       FLAG_DOCUMENT_5, FLAG_DOCUMENT_6, FLAG_DOCUMENT_7,
+                                       FLAG_DOCUMENT_8, FLAG_DOCUMENT_9, APARTMENTS_AVG,
+                                       OBS_30_CNT_SOCIAL_CIRCLE, OBS_60_CNT_SOCIAL_CIRCLE, DEF_30_CNT_SOCIAL_CIRCLE,
+                                       DEF_60_CNT_SOCIAL_CIRCLE, WEEKDAY_APPR_PROCESS_START, HOUR_APPR_PROCESS_START,
+                                       AMT_REQ_CREDIT_BUREAU_HOUR, AMT_REQ_CREDIT_BUREAU_QRT, HOUSETYPE_MODE, OCCUPATION_TYPE, EXT_SOURCE_3,
+                                       avg_amt_credit_sum_limit, AMT_REQ_CREDIT_BUREAU_WEEK, ORGANIZATION_TYPE))
+
+#Remove empty levels
+levels(app_train3$NAME_TYPE_SUITE)[1] = "Missing"
+
+#Replace NA values w/ 0
+app_train3 <- app_train3 %>% 
+          mutate(DAYS_EMPLOYED = coalesce(DAYS_EMPLOYED, 0))
+
+skm2 <- skim(app_train3)
+# Create DF showing Columns with missing data
+skm_missing3 <- select(skm2, skim_variable, n_missing, complete_rate) %>% filter(n_missing > 0) %>% arrange(complete_rate)
+skm_missing3
+
+app_train3 <- app_train3 %>% drop_na()
+
+# split data
+rows <- nrow(app_train3)
+train.index <- sample(1:rows, floor(0.7*rows), replace=FALSE)
+dt.train <- app_train3[train.index,]
+dt.test <- app_train3[-train.index,]
+
+head(app_train3)
+summary(app_train3)
 ```
 
 # Modeling Process
@@ -417,11 +466,41 @@ xgb.model <- train(learner = lrn.tune,
 ### Benchmarking
 Training the model using the selected hyperparameters was benchmarked and averaged 285s per training run.
 
+## Random Forest
+Random Forest used to model the relationship between a binary dependent variable "TARGET" variable all the other variables in the dt.train dataset. Several hyperparameters and tunings were evaluated throughout this process.
+
+### Fit + Tune Random Forest Model
+```{r Random Forest, echo=TRUE, eval=FALSE}
+# Normal Random Forest
+set.seed(300)
+rf <- randomForest(TARGET ~ ., data = dt.train)
+rf
+
+# Auto-tuned Random Forest
+# ctrl <- trainControl(method = "repeatedcv",
+                     # number = 5, repeats = 5)
+
+# grid_rf <- expand.grid(.mtry = c(2, 8))
+
+# tuned_rf <- train(TARGET ~ ., data = dt.train, method = "rf",
+                  # metric = "Kappa", trControl = ctrl,
+                  # tuneGrid = grid_rf)
+
+# tuned_rf
+
+# After several failed attempts at training the tuned Random Forest, I do not think my computer is able to handle the processing load. I did, however, leave my code for reference.
+```
+
+### Save the Random Forest Model
+```{r Save Model, echo=FALSE}
+saveRDS(rf, "rf.rds")
+```
+
 # Model Performance
 ```{r load saved models, echo=FALSE}
 # Load Saved Models
 xgb.model <- readRDS('best_model_tuned2.xgb')
-
+rf.model <- readRDS('rf.rds')
 # From this point forward code will be evaluated during Knitting operations ####
 ```
 
@@ -518,6 +597,30 @@ TNR <- TN / ( TN + FN )
 ```
 
 The model resulted in a Recall(TPR) = `r TPR` and Specificity(TNR) = `r TNR`.
+
+## Random Forest Model Performance
+```{r Explore Performance, echo=TRUE, eval=FALSE}
+varImpPlot(rf.model)
+
+predicted <- predict(rf.model, dt.test)
+
+table(predicted, dt.test$TARGET)
+
+rf_TP <- 69926
+rf_TN <- 6
+rf_FN <- 5876
+rf_FP <- 5
+
+rf_TPR <- rf_TP / ( rf_TP + rf_FP )
+rf_TNR <- rf_TN / ( rf_TN + rf_FN )
+
+rf_TPR
+rf_TNR
+
+rf.model
+```
+
+The model identified EXT_SOURCE_2, avg_days_credit, and avg_days_credit_enddate to be important. However, the model is extremely unspecific based on its TNR. The model did perform slightly better on the training dataset. It is likely overfitting and will need to have some parameters tweaked.
 
 # Results
 
