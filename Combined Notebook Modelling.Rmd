@@ -317,7 +317,6 @@ A variety of models were prepared for evaluation
 # Fitting model 
 
 model_glm <- glm(TARGET ~ ., data = train_glm_upsampled[(selected_features)], family = "binomial")
-summary(model_glm)
 
 ```
 ```{r}
