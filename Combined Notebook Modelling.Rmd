@@ -216,7 +216,7 @@ dtest_df <- data.frame(predict(dummy, newdata=test_df))
 dtrain_df$TARGET <- as.factor(dtrain_df$TARGET)
 dtest_df$TARGET <- as.factor(dtest_df$TARGET)
 ```
-# Data Pre-processing for Logistic Regression
+## Data Pre-processing for Logistic Regression
 ```{r}
 #Taking joined data to new variable
 data_ktrain <-app_train2
@@ -430,7 +430,7 @@ Training the model using the selected hyperparameters was benchmarked and averag
 
 # Model Performance
 
-# Model Performance for Logistic regression
+## Model Performance for Logistic regression
 ```{r}
 # Predict probabilities for training and testing data
 train_probs <- predict(model, train_data_1, type = "response")
