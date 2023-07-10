@@ -312,7 +312,7 @@ After applying upsampling, the class distribution becomes more balanced, with bo
 # Modeling Process
 A variety of models were prepared for evaluation
 
-Modeling for Logistic Regression
+## Modeling for Logistic Regression
 ```{r}
 # Fitting model 
 
