@@ -349,8 +349,8 @@ significant_rows <- read.csv("significant_rows_upsampled.csv")
 # Split the data into training and testing sets
 set.seed(123)
 train_indices_1 <- caret::createDataPartition(significant_rows$TARGET, p = 0.7, list = FALSE)
-train_data_1 <- significant_rows[train_indices, ]
-test_data_1 <- significant_rows[-train_indices, ]
+train_data_1 <- significant_rows[train_indices_1, ]
+test_data_1 <- significant_rows[-train_indices_1, ]
 
 ```
 
