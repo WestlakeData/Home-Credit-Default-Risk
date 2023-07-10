@@ -20,6 +20,8 @@ options(tibble.print_max = 40,
         width = 222,
         pillar.min_title_chars = 15)
 
+app_train1 <- readRDS('app_train1.RDS')
+app_train2 <- readRDS('app_train2.RDS')
 ```
 
 # Introduction  
@@ -46,6 +48,8 @@ library(pROC)
 library(skimr)
 library(randomForest)
 library(ROCR)
+library(ROSE)
+library(mlr)
 ```
 ## Standardized Data Set Preparation
 In accordance with the information detailed in our previous EDA notebook, we created a standardized data set that utilized the same variables for all models.
@@ -283,6 +287,7 @@ data_ktrain_clean$EXT_SOURCE_2 <- ifelse(is.na(data_ktrain_clean$EXT_SOURCE_2),
                                          data_ktrain_clean$EXT_SOURCE_2)
 
 ```
+
 ```{r}
 # Upsampling the data
 
@@ -357,6 +362,63 @@ dt.test <- app_train3[-train.index,]
 head(app_train3)
 summary(app_train3)
 ```
+
+## Support Vector Machine
+
+Support Vector Machine (SVM) seemed like a favorable candidate given it's high potential for accuracy while still boasting good generalizability. While this may be true, run times proved to be immense, particularly when using the polynomial kernel since it generates many more dimensions (than compared to say RBF kernel) because it not only considers each feature but also their interactions to a certain degree. This can lead to a more accurate classifier if these interactions are important in your data, but it can also cause the SVM to become slow and potentially overfit if the degree of the polynomial is set too high.
+
+```{r}
+# Importing specific output for display to reduce notebook runtime
+fe_cvcomp1 <- readRDS("fe_cvcomp1.RDS")
+svm_final_confmat <- readRDS("svm_final_confmat.RDS")
+```
+
+
+```{r eval = FALSE}
+# Trimming data ----
+app_train3 <- app_train2 %>%
+  rename_with(tolower) %>%
+  filter(if_all(c(code_gender, own_car_age2, avg_ext_score, avg_amt_credit_sum), ~!is.na(.))) %>%
+  mutate(across(c(occupation_type, name_type_suite), ~replace_na(as.character(.), "unknown")),
+         across(matches("^amt_"), as.numeric),
+         code_gender = factor(code_gender, levels = c("F", "M")),
+         days_employed = replace_na(days_employed, 10),
+         organization_type = replace_na(occupation_type, "none"),
+         own_car_age = replace_na(own_car_age, -1),
+         avg_amt_credit_sum_debt = replace_na(avg_amt_credit_sum_debt, 0),
+         across(where(~any(is.na(.)) & is.numeric(.)) & !contains("avg_amt_credit_sum_debt"),
+                ~replace_na(., median(., na.rm = TRUE))),
+         across(where(~n_distinct(.) == 2),
+                ~case_when(. == .[order(.)[1]] ~ 0,
+                           .default = 1)),
+         across(where(is.factor), as.character)) %>%
+  select(-c(housetype_mode, sk_id_curr, own_car_age, flag_mobil, flag_emp_phone, flag_work_phone, 
+            weekday_appr_process_start, hour_appr_process_start, amt_req_credit_bureau_hour, 
+            amt_req_credit_bureau_day,  amt_req_credit_bureau_week,  amt_req_credit_bureau_mon,
+            amt_req_credit_bureau_qrt,  days_last_phone_change, contains("flag_document")))
+
+app_train4 <- dummyVars("~ .", app_train3) %>%
+  predict(app_train3) %>%
+  as_tibble() %>%
+  select(where(~n_distinct(.) > 1)) 
+
+# Making splits ----
+set.seed(123)
+train_index <- createDataPartition(app_train4$target, p = 0.8, list = FALSE)
+
+test_sk_id_curr <- app_train2 %>%
+  rename_with(tolower) %>%
+  filter(if_all(c(code_gender, own_car_age2, avg_ext_score, avg_amt_credit_sum), ~!is.na(.))) %>%
+  filter(!row_number() %in% train_index) %>%
+  pull(sk_id_curr)
+
+xtrain <- as.data.frame(app_train4[train_index,]) %>%
+  mutate(across(where(~n_distinct(.) == 2), factor))
+xtest <- as.data.frame(app_train4[-train_index,])  %>%
+  mutate(across(where(~n_distinct(.) == 2), factor))
+```
+
+I opted to create dummy variables since each level of each factor must be present in test/train set and every fold in k-fold cross validation. Some levels of some factors are not prevalent enough when using large k.
 
 # Modeling Process
 A variety of models were prepared for evaluation
@@ -506,6 +568,164 @@ rf
 saveRDS(rf, "rf.rds")
 ```
 
+## Support Vector Machine
+
+### Custom ksvm Cross Validation Function
+
+```{r}
+ksvm_cv <- \(df, tv, kern, c = 1, n_folds = 1, seed = 123, give.model = TRUE){
+  if (n_folds > 1) {
+    set.seed(seed)
+    folds <- createFolds(pull(df, {{tv}}), n_folds)
+    
+    cv_res <- lapply(folds, \(x){
+      test <- df[x,]
+      train <- df[-x,]
+      
+      fmodel <- ksvm(pull(train, {{tv}}) ~ ., data = train, kernel = kern, C = c)
+      fpred <- predict(fmodel, test)
+      
+      cm <- confusionMatrix(fpred, pull(test, {{tv}}))
+      
+      return(c(cm$overall[1], cm$byClass))
+    })
+    
+    perf_df <- tibble(cv_res) %>%
+      unnest_wider(cv_res) %>%
+      summarise(across(everything(),
+                       list(avg = ~mean(., na.rm = TRUE),
+                            sd = ~sd(., na.rm = TRUE)))) %>%
+      pivot_longer(everything(),
+                   names_to = c(".value", "stat"),
+                   names_pattern = "(.*)_(.*)")
+    
+    return(perf_df)
+  } else {
+    train <- df
+    
+    fmodel <- ksvm(pull(train, {{tv}}) ~ ., data = train, kernel = kern, C = c)
+    fpred <- predict(fmodel, train)
+    
+    cm <- confusionMatrix(fpred, pull(train, {{tv}}))
+    
+    if(give.model){
+      return(
+        list(
+          perf_metrics = c(cm$overall[1], cm$byClass),
+          confmat = cm,
+          preds = fpred,
+          ksvm_model = fmodel
+        )
+      )
+    } else {
+      return(
+        list(
+          perf_metrics = c(cm$overall[1], cm$byClass),
+          confmat = cm,
+          preds = fpred
+        )
+      )
+    }
+  }
+}
+```
+
+### Parallel Cross Validation
+
+```{r eval = FALSE}
+# Parameter grid for two different kernels
+kgrid <- expand.grid(kernel = c("polydot"),
+                     C = c(0.01, 2, 3)
+) %>%
+  bind_rows(expand.grid(kernel = c("rbfdot"),
+                        C = c(1, 5, 20, 60, 200)
+  )) %>%
+  as_tibble() %>%
+  mutate(kernel = as.character(kernel))
+
+# Use smaller sample to decrease outrageous run times
+set.seed(123)
+che <- xtrain %>%
+  slice_sample(n = 20000)
+
+cl <- makeCluster(8)
+registerDoParallel(cl)
+
+(xtime1 <- Sys.time())
+fe_cvcomp <- foreach(i = 1:nrow(kgrid), .packages = c("tidyverse", "caret", "kernlab"), .combine = "bind_rows", .verbose = TRUE) %dopar% {
+  fetime1 <- Sys.time()
+  x <- ksvm_cv(che, target, kern = kgrid$kernel[i], c = kgrid$C[i], n_folds = 5, give.model = FALSE)
+  fetime2 <- Sys.time()
+  ttime <- fetime2 - fetime1
+  
+  xdf <- tibble(kernel = kgrid$kernel[i],
+                C = kgrid$C[i],
+                sec = as.numeric(ttime, units = "secs"),
+                x)
+  
+  xdf
+}
+xtime2 <- Sys.time()
+
+stopCluster(cl)
+(the_time <- xtime2 - xtime1)
+
+fe_cvcomp1 <- fe_cvcomp %>%
+  mutate(mins = sec/60,
+         .after = sec) 
+```
+
+```{r}
+fe_cvcomp1
+```
+
+### 8 Fold Majority Class Classifier
+
+Through the tuning process, I learned very quickly that SVM is very computationally expensive. To solve this I cut the train set into 8 folds, made 8 models and predictions and the majority prediction became the final prediction. In the case of a tie, the prediction is set to 0 since it's the majority class for the dataset.
+
+```{r eval = FALSE}
+set.seed(123)
+train_folds <- createFolds(xtrain$target, 8)
+
+cl <- makeCluster(8)
+registerDoParallel(cl)
+
+(xtime1 <- Sys.time())
+mmc <- foreach(i = 1:8, .packages = c("tidyverse", "caret", "kernlab"), .combine = "c") %dopar% {
+  xdf <- xtrain[train_folds[[i]], ]
+  
+  xmodel <- ksvm(target ~ ., data = xdf, kernel = "polydot", C = 3)
+  xpreds <- predict(xmodel, xtest)
+  
+  xlist <- list(fold = i, model = xmodel, preds = xpreds)
+  
+  xlist
+  
+}
+xtime2 <- Sys.time()
+(ttime <- xtime2 - xtime1)
+
+stopCluster(cl)
+
+final_preds <- tibble(x1 = names(mmc),
+                      x2 = mmc) %>%
+  filter(x1 == "preds") %>%
+  mutate(x1 = paste0(x1, row_number())) %>%
+  pivot_wider(names_from = x1,
+              values_from = x2) %>%
+  unnest(cols = c(preds1:preds8)) %>%
+  rowwise() %>%
+  mutate(n0 = sum(c_across(preds1:preds8) == 0)) %>%
+  ungroup() %>%
+  mutate(pred = case_when(n0 >= 4 ~ 0,
+                          .default = 1),
+         sk_id_curr = test_sk_id_curr) %>%
+  select(sk_id_curr, pred)
+
+
+```
+
+
 # Model Performance
 
 ## Model Performance for Logistic regression
@@ -637,6 +857,10 @@ test_df <- test_df %>% select(-c(SK_ID_CURR,OWN_CAR_AGE)) # Add TARGET
 
 train_df[77:85] <- train_df[77:85] %>% replace(is.na(.), 0) # Replace NaN values
 test_df[77:85] <- test_df[77:85] %>% replace(is.na(.), 0) # Replace NaN values
+train_df <- train_df %>%
+  mutate(AVG_EXT_SCORE = replace_na(AVG_EXT_SCORE, 0))
+test_df <- test_df %>%
+  mutate(AVG_EXT_SCORE = replace_na(AVG_EXT_SCORE, 0))
 train_df$TARGET <- ifelse(train_df$TARGET == '1',1,0) # TARGET
 train_df$FLAG_OWN_CAR <- ifelse(train_df$FLAG_OWN_CAR == 'Y',1,0) # FLAG_OWN_CAR
 train_df$FLAG_OWN_REALTY <- ifelse(train_df$FLAG_OWN_REALTY == 'Y',1,0) # FLAG_OWN_REALTY
@@ -730,14 +954,30 @@ rf.model
 
 The model identified EXT_SOURCE_2, avg_days_credit, and avg_days_credit_enddate to be important. However, the model is extremely unspecific based on its TNR. The model did perform slightly better on the training dataset. It is likely overfitting and will need to have some parameters tweaked.
 
+## Support Vector Machine
+
+```{r eval = FALSE}
+svm_final_confmat <- confusionMatrix(factor(final_preds$pred), xtest$target)
+```
+
+Given the business case, it seems wise to optimize around maximizing Specificity (if target class = 0) since the cost of default likely far exceeds the opportunity cost of a new customer. This model finished with an unimpressive 86.3% accuracy and a surprisingly hard to achieve 9.75% Specificity.
+
+```{r}
+svm_final_confmat
+```
+
+
 # Results
 
+Though the SVM model yielded the highest Specificity, the XGB model's Specificity was not far behind and boasted a superior overall accuracy. This is the model we would propose to move forward with and also the model we submitted to Kaggle. The public score it received was 0.5211.
+
+The common pain point expressed through this process was the sheer volume of the data. Realizing exactly how to trim the data occurs only after modeling begins and any trimming during even an extensive EDA is to some degree assumptive. With a smaller and tidier data set, more hyperparameter tuning and other experimentation can be done which ideally results in more predictive models.
 
 # Contributions
 * Roman Brock
     + Random Forest
 * Che Diaz Fadel
-    + Support Vector Machines
+    + Support Vector Machine
 * Kalyani Joshi
     + Logistic Regression
 * Chris Porter
