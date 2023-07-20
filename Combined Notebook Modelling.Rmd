@@ -554,18 +554,19 @@ rf
 
 # grid_rf <- expand.grid(.mtry = c(2, 8))
 
-# tuned_rf <- train(TARGET ~ ., data = dt.train, method = "rf",
+# tuned_rf <- caret::train(TARGET ~ ., data = dt.train, method = "rf",
                   # metric = "Kappa", trControl = ctrl,
                   # tuneGrid = grid_rf)
 
 # tuned_rf
 
-# After several failed attempts at training the tuned Random Forest, I do not think my computer is able to handle the processing load. I did, however, leave my code for reference.
+# I was able to process the model above after leaving it run for over 48 hours. However, after saving the model, it is over 100MB and too big to add to git. I still tested it on my local machine.
 ```
 
 ### Save the Random Forest Model
 ```{r Save Model, echo=FALSE}
 saveRDS(rf, "rf.rds")
+# saveRDS(tuned_rf, "tuned_rf.rds")
 ```
 
 ## Support Vector Machine
@@ -830,6 +831,7 @@ In addition to the external data sources, other important variables for predicti
 # Load Saved Models
 xgb.model <- readRDS('best_model_tuned2.xgb')
 rf.model <- readRDS('rf.rds')
+# trf.model <- readRDS('tuned_rf.rds')
 # From this point forward code will be evaluated during Knitting operations ####
 ```
 ## XGBoost Model Performance
@@ -935,8 +937,13 @@ The model resulted in a Recall(TPR) = `r TPR` and Specificity(TNR) = `r TNR`.
 varImpPlot(rf.model)
 
 predicted <- predict(rf.model, dt.test)
+# tpredicted <- predict(trf.model, dt.test)
 
 table(predicted, dt.test$TARGET)
+# table(tpredicted, dt.test$TARGET)
+# tpredicted     0     1
+#          0 70054  2353
+#          1     0  3406
 
 rf_TP <- 69926
 rf_TN <- 6
@@ -950,9 +957,10 @@ rf_TPR
 rf_TNR
 
 rf.model
+# trf.model
 ```
 
-The model identified EXT_SOURCE_2, avg_days_credit, and avg_days_credit_enddate to be important. However, the model is extremely unspecific based on its TNR. The model did perform slightly better on the training dataset. It is likely overfitting and will need to have some parameters tweaked.
+The model identified EXT_SOURCE_2, avg_days_credit, and avg_days_credit_enddate to be important. However, the model is extremely unspecific based on its TNR. The model did perform slightly better on the training dataset. It is likely overfitting and will need to have some parameters tweaked. The tuned model performed a little better, but not enough to warrant the extra processing time and size.
 
 ## Support Vector Machine
 
