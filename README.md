@@ -34,3 +34,5 @@ Multiple machine learning models were developed in an attempt to accurately pred
 
 ### XGBoost
 One of the models developed was an Extreme Gradient Boosted (XGBoost) Classifier.  This model had several hyperparameters which required tuning.  Tuning was done on the training set (70% split) and validated using the validation set (30%).  The final trained model was then used to make predicitons against the Test data set with those predictions submitted to Kaggle for evaluation.
+
+Other models were completed by other group members.  The combined work of the team is included in the the [Combined Modelling Notebook](https://github.com/WestlakeData/Home-Credit-Default-Risk/blob/main/Combined%20Notebook%20Modelling.Rmd)
