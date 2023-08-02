@@ -28,3 +28,9 @@ The dataset consists of 307,511 rows and 122 columns, including the target varia
 
 In summary, the dataset analysis reveals an imbalance in the target variable, with a majority of clients having no payment difficulties. Correlation analysis identifies numerical and categorical predictors associated with the target variable. Missing values are present in various columns, requiring appropriate imputation or removal. Credit bureau data displays right-skewed distribution and missing values that can be imputed with the median value. Erroneous data points and outliers are identified and need to be addressed. These findings provide valuable insights for data pre-processing and modeling to predict loan repayment probabilities for Home Credit customers. The dataset provides a significant number of records and even when columns and rows are removed or imputed as discussed above, there is sufficient information to justify moving forward with this dataset into the modelling phase.  
 **Deliverable:** [Combined Notebook.html](https://github.com/WestlakeData/Home-Credit-Default-Risk/blob/main/Combined-Notebook.html)
+
+## Modelling
+Multiple machine learning models were developed in an attempt to accurately predict default more accurately than use of the majority class for prediction.
+
+### XGBoost
+One of the models developed was an Extreme Gradient Boosted (XGBoost) Classifier.  This model had several hyperparameters which required tuning.  Tuning was done on the training set (70% split) and validated using the validation set (30%).  The final trained model was then used to make predicitons against the Test data set with those predictions submitted to Kaggle for evaluation.
